@@ -1,0 +1,31 @@
+{
+  "name": "@swell/api",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "build": "echo 'no build step'",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@aws-sdk/client-s3": "^3.758.0",
+    "@aws-sdk/s3-request-presigner": "^3.758.0",
+    "better-auth": "^1.2.4",
+    "drizzle-orm": "^0.45.2",
+    "hono": "^4.7.4",
+    "@hono/node-server": "^1.14.0",
+    "postgres": "^3.4.5"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "drizzle-kit": "^0.31.4",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}

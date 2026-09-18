@@ -1,0 +1,625 @@
+{
+  "name": "Swell API",
+  "version": "1.0.0",
+  "description": "Backend API for Swell and future niche apps. Multi-tenant via app_id.",
+  "conventions": {
+    "baseUrl": "https://api.<your-domain>",
+    "baseUrlDev": "http://localhost:3000",
+    "contentType": "application/json",
+    "auth": {
+      "type": "bearer",
+      "header": "Authorization",
+      "format": "Bearer <session_token>",
+      "storage": "expo-secure-store on mobile"
+    },
+    "multiApp": {
+      "queryParam": "app_id",
+      "header": "X-App-Id",
+      "defaultAppId": "swell",
+      "description": "Every app-scoped route requires app_id via query or header"
+    },
+    "ownershipRule": "Every query must filter by authenticated user_id. No cross-user access.",
+    "errorResponse": {
+      "schema": {
+        "error": "string"
+      },
+      "example": {
+        "error": "Human-readable message"
+      }
+    }
+  },
+  "environmentVariables": [
+    "DATABASE_URL",
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL",
+    "R2_ACCOUNT_ID",
+    "R2_ACCESS_KEY_ID",
+    "R2_SECRET_ACCESS_KEY",
+    "R2_BUCKET",
+    "ELEVENLABS_API_KEY",
+    "ANTHROPIC_API_KEY",
+    "REVENUECAT_WEBHOOK_SECRET"
+  ],
+  "database": {
+    "engine": "PostgreSQL",
+    "authTables": ["user", "session", "account", "verification"],
+    "appTables": {
+      "profiles": {
+        "primaryKey": ["user_id", "app_id"],
+        "columns": {
+          "user_id": "text, references user(id)",
+          "app_id": "text",
+          "reason": "text, nullable",
+          "quit_date": "timestamptz, nullable",
+          "meta": "jsonb, default {}",
+          "created_at": "timestamptz, default now()"
+        }
+      },
+      "cravings": {
+        "primaryKey": ["id"],
+        "columns": {
+          "id": "uuid, default gen_random_uuid()",
+          "user_id": "text, references user(id)",
+          "app_id": "text",
+          "started_at": "timestamptz, default now()",
+          "ended_at": "timestamptz, nullable",
+          "beaten": "boolean, default false",
+          "game_played": "text, nullable",
+          "duration_secs": "integer, nullable",
+          "trigger_note": "text, nullable",
+          "voice_note_key": "text, nullable",
+          "transcript": "text, nullable",
+          "created_at": "timestamptz, default now()"
+        }
+      },
+      "insights": {
+        "primaryKey": ["id"],
+        "columns": {
+          "id": "uuid, default gen_random_uuid()",
+          "user_id": "text, references user(id)",
+          "app_id": "text",
+          "period": "text, nullable",
+          "summary": "text, nullable",
+          "created_at": "timestamptz, default now()"
+        }
+      }
+    }
+  },
+  "gamePlayedValues": [
+    "block_stack",
+    "color_match",
+    "flow_connect",
+    "tap_rhythm"
+  ],
+  "profileMetaSchema": {
+    "swell": {
+      "cigs_per_day": { "type": "number", "description": "Cigarettes smoked per day before quitting" },
+      "cost_per_pack": { "type": "number", "description": "Cost per pack in local currency (e.g. INR)" },
+      "cigs_per_pack": { "type": "number", "description": "Cigarettes per pack, default 20" },
+      "is_premium": { "type": "boolean", "description": "Set by RevenueCat webhook" },
+      "premium_expires_at": { "type": "string", "format": "date-time", "description": "Premium expiry" }
+    }
+  },
+  "derivedMetrics": {
+    "description": "Computed server-side from profiles + cravings. Do not store.",
+    "formulas": {
+      "days_smoke_free": "floor((now - quit_date) / 1 day) when quit_date is set",
+      "money_reclaimed": "days_smoke_free * cigs_per_day * (cost_per_pack / cigs_per_pack)",
+      "time_saved_minutes": "total_beaten * 5"
+    }
+  },
+  "endpoints": [
+    {
+      "id": "health",
+      "method": "GET",
+      "path": "/health",
+      "auth": false,
+      "phase": "P0",
+      "mobileUsesToday": false,
+      "description": "Health check",
+      "response": {
+        "200": {
+          "ok": true,
+          "service": "swell-api"
+        }
+      }
+    },
+    {
+      "id": "auth-sign-up",
+      "method": "POST",
+      "path": "/api/auth/sign-up/email",
+      "auth": false,
+      "phase": "P0",
+      "mobileUsesToday": false,
+      "description": "Register with email/password (Better Auth or equivalent)",
+      "requestBody": {
+        "email": "string",
+        "password": "string",
+        "name": "string"
+      }
+    },
+    {
+      "id": "auth-sign-in",
+      "method": "POST",
+      "path": "/api/auth/sign-in/email",
+      "auth": false,
+      "phase": "P0",
+      "mobileUsesToday": false,
+      "description": "Sign in with email/password",
+      "requestBody": {
+        "email": "string",
+        "password": "string"
+      }
+    },
+    {
+      "id": "auth-sign-out",
+      "method": "POST",
+      "path": "/api/auth/sign-out",
+      "auth": true,
+      "phase": "P0",
+      "mobileUsesToday": false,
+      "description": "Sign out current session"
+    },
+    {
+      "id": "auth-session",
+      "method": "GET",
+      "path": "/api/auth/session",
+      "auth": true,
+      "phase": "P0",
+      "mobileUsesToday": false,
+      "description": "Get current session and user",
+      "response": {
+        "200": {
+          "user": {
+            "id": "usr_abc123",
+            "name": "Nil",
+            "email": "user@example.com",
+            "emailVerified": false
+          },
+          "session": {
+            "id": "sess_xyz",
+            "token": "bearer_token_here",
+            "expiresAt": "2026-10-04T00:00:00.000Z"
+          }
+        }
+      }
+    },
+    {
+      "id": "profile-get",
+      "method": "GET",
+      "path": "/profile",
+      "auth": true,
+      "phase": "P0",
+      "mobileUsesToday": true,
+      "description": "Get user profile for one app. Returns empty defaults if not created yet.",
+      "queryParams": {
+        "app_id": { "type": "string", "required": true, "example": "swell" }
+      },
+      "response": {
+        "200": {
+          "user_id": "usr_abc123",
+          "app_id": "swell",
+          "reason": "For my kids",
+          "quit_date": "2026-08-01T00:00:00.000Z",
+          "meta": {
+            "cigs_per_day": 10,
+            "cost_per_pack": 200,
+            "cigs_per_pack": 20
+          }
+        }
+      }
+    },
+    {
+      "id": "profile-put",
+      "method": "PUT",
+      "path": "/profile",
+      "auth": true,
+      "phase": "P0",
+      "mobileUsesToday": false,
+      "description": "Create or update profile (upsert)",
+      "queryParams": {
+        "app_id": { "type": "string", "required": true, "example": "swell" }
+      },
+      "requestBody": {
+        "reason": "string, optional",
+        "quit_date": "string (ISO 8601), optional",
+        "meta": {
+          "cigs_per_day": 10,
+          "cost_per_pack": 200,
+          "cigs_per_pack": 20
+        }
+      },
+      "response": {
+        "200": {
+          "ok": true
+        }
+      }
+    },
+    {
+      "id": "cravings-create",
+      "method": "POST",
+      "path": "/cravings",
+      "auth": true,
+      "phase": "P0",
+      "mobileUsesToday": true,
+      "description": "Log a craving fight session when user finishes a game",
+      "queryParams": {
+        "app_id": { "type": "string", "required": true, "example": "swell" }
+      },
+      "requestBody": {
+        "beaten": true,
+        "game_played": "block_stack",
+        "duration_secs": 178,
+        "trigger_note": "After lunch, stressed at work"
+      },
+      "requestBodySchema": {
+        "beaten": { "type": "boolean", "required": true },
+        "game_played": { "type": "string", "required": true, "enum": ["block_stack", "color_match", "flow_connect", "tap_rhythm"] },
+        "duration_secs": { "type": "integer", "required": true },
+        "trigger_note": { "type": "string", "required": false }
+      },
+      "response": {
+        "201": {
+          "id": "550e8400-e29b-41d4-a716-446655440000"
+        }
+      },
+      "serverSets": ["started_at", "ended_at", "user_id", "app_id"]
+    },
+    {
+      "id": "cravings-stats",
+      "method": "GET",
+      "path": "/cravings/stats",
+      "auth": true,
+      "phase": "P0",
+      "mobileUsesToday": true,
+      "description": "Aggregate craving counts for Home screen hero metric",
+      "queryParams": {
+        "app_id": { "type": "string", "required": true, "example": "swell" }
+      },
+      "response": {
+        "200": {
+          "total_beaten": 24,
+          "beaten_this_week": 5,
+          "total_sessions": 30
+        }
+      },
+      "fieldDefinitions": {
+        "total_beaten": "Count where beaten = true",
+        "beaten_this_week": "beaten = true AND created_at >= now() - 7 days",
+        "total_sessions": "All craving rows"
+      }
+    },
+    {
+      "id": "dashboard",
+      "method": "GET",
+      "path": "/dashboard",
+      "auth": true,
+      "phase": "P0",
+      "mobileUsesToday": false,
+      "recommended": true,
+      "description": "Single call for Home + Progress screens. Avoids multiple round-trips.",
+      "queryParams": {
+        "app_id": { "type": "string", "required": true, "example": "swell" }
+      },
+      "response": {
+        "200": {
+          "cravings": {
+            "total_beaten": 24,
+            "beaten_this_week": 5,
+            "total_sessions": 30
+          },
+          "derived": {
+            "days_smoke_free": 4,
+            "money_reclaimed": 520,
+            "money_currency": "INR",
+            "time_saved_minutes": 480
+          },
+          "health_timeline": [
+            {
+              "id": "20min",
+              "label": "20 minutes",
+              "status": "completed",
+              "completed_at": "2026-08-01T00:20:00.000Z"
+            },
+            {
+              "id": "24hr",
+              "label": "24 hours",
+              "status": "completed",
+              "completed_at": "2026-08-02T00:00:00.000Z"
+            },
+            {
+              "id": "2wk",
+              "label": "2 weeks",
+              "status": "current",
+              "completed_at": null
+            },
+            {
+              "id": "1yr",
+              "label": "1 year",
+              "status": "upcoming",
+              "completed_at": null
+            }
+          ]
+        }
+      },
+      "healthTimelineStatusValues": ["completed", "current", "upcoming"]
+    },
+    {
+      "id": "cravings-patch",
+      "method": "PATCH",
+      "path": "/cravings/:id",
+      "auth": true,
+      "phase": "P1",
+      "mobileUsesToday": false,
+      "description": "Update craving after victory with text note or voice key",
+      "queryParams": {
+        "app_id": { "type": "string", "required": true, "example": "swell" }
+      },
+      "pathParams": {
+        "id": { "type": "uuid", "description": "Craving ID" }
+      },
+      "requestBody": {
+        "trigger_note": "Craving hit after coffee",
+        "voice_note_key": "swell/usr_abc123/uuid.m4a"
+      },
+      "requestBodySchema": {
+        "trigger_note": { "type": "string", "required": false },
+        "voice_note_key": { "type": "string", "required": false }
+      },
+      "response": {
+        "200": {
+          "id": "550e8400-e29b-41d4-a716-446655440000",
+          "trigger_note": "Craving hit after coffee",
+          "voice_note_key": "swell/usr_abc123/uuid.m4a",
+          "transcript": null
+        }
+      },
+      "authorization": "Must verify craving.user_id === authenticated user"
+    },
+    {
+      "id": "cravings-list",
+      "method": "GET",
+      "path": "/cravings",
+      "auth": true,
+      "phase": "P2",
+      "mobileUsesToday": false,
+      "description": "Paginated craving history for Progress screen",
+      "queryParams": {
+        "app_id": { "type": "string", "required": true },
+        "limit": { "type": "integer", "default": 20 },
+        "offset": { "type": "integer", "default": 0 }
+      },
+      "response": {
+        "200": {
+          "items": [
+            {
+              "id": "550e8400-e29b-41d4-a716-446655440000",
+              "beaten": true,
+              "game_played": "block_stack",
+              "duration_secs": 178,
+              "trigger_note": "After lunch",
+              "transcript": "I was stressed about a deadline",
+              "created_at": "2026-09-04T14:30:00.000Z"
+            }
+          ],
+          "total": 24
+        }
+      }
+    },
+    {
+      "id": "storage-upload-url",
+      "method": "POST",
+      "path": "/storage/upload-url",
+      "auth": true,
+      "phase": "P1",
+      "mobileUsesToday": false,
+      "description": "Get presigned URL for direct audio upload to R2/S3",
+      "queryParams": {
+        "app_id": { "type": "string", "required": true, "example": "swell" }
+      },
+      "requestBody": {
+        "content_type": "audio/m4a"
+      },
+      "response": {
+        "200": {
+          "key": "swell/usr_abc123/7f3c9a2e-....m4a",
+          "upload_url": "https://<bucket>.r2.cloudflarestorage.com/...",
+          "expires_in": 600
+        }
+      },
+      "clientFlow": [
+        "POST /storage/upload-url",
+        "PUT audio bytes to upload_url with Content-Type: audio/m4a",
+        "PATCH /cravings/:id with voice_note_key",
+        "POST /transcribe with craving_id and voice_note_key"
+      ]
+    },
+    {
+      "id": "transcribe",
+      "method": "POST",
+      "path": "/transcribe",
+      "auth": true,
+      "phase": "P1",
+      "mobileUsesToday": false,
+      "description": "Transcribe voice note via ElevenLabs Scribe. API key server-side only.",
+      "queryParams": {
+        "app_id": { "type": "string", "required": true, "example": "swell" }
+      },
+      "requestBody": {
+        "craving_id": "550e8400-e29b-41d4-a716-446655440000",
+        "voice_note_key": "swell/usr_abc123/7f3c9a2e-....m4a"
+      },
+      "response": {
+        "200": {
+          "transcript": "I was at my desk after lunch and felt really anxious."
+        }
+      },
+      "serverFlow": [
+        "Fetch audio from R2 using voice_note_key",
+        "Call ElevenLabs Scribe",
+        "Save transcript on cravings row"
+      ]
+    },
+    {
+      "id": "insights-create",
+      "method": "POST",
+      "path": "/insights",
+      "auth": true,
+      "phase": "P1",
+      "mobileUsesToday": false,
+      "description": "Generate weekly pattern summary via Anthropic and cache in DB",
+      "queryParams": {
+        "app_id": { "type": "string", "required": true, "example": "swell" }
+      },
+      "requestBody": {
+        "system_prompt": "You are a calm, supportive coach helping someone quit smoking...",
+        "period": "week-2026-35"
+      },
+      "requestBodySchema": {
+        "system_prompt": { "type": "string", "required": true, "description": "From NicheConfig per app niche" },
+        "period": { "type": "string", "required": false, "description": "Defaults to current ISO week" }
+      },
+      "response": {
+        "200": {
+          "id": "660e8400-e29b-41d4-a716-446655440001",
+          "period": "week-2026-35",
+          "summary": "You crave most around 4pm and after meals. Short walks during that window may help."
+        }
+      },
+      "serverFlow": [
+        "Load last ~20 cravings (trigger_note + transcript)",
+        "Call Anthropic API",
+        "Insert insights row"
+      ]
+    },
+    {
+      "id": "insights-latest",
+      "method": "GET",
+      "path": "/insights/latest",
+      "auth": true,
+      "phase": "P1",
+      "mobileUsesToday": false,
+      "recommended": true,
+      "description": "Get most recent insight for Progress screen",
+      "queryParams": {
+        "app_id": { "type": "string", "required": true, "example": "swell" }
+      },
+      "response": {
+        "200": {
+          "id": "660e8400-e29b-41d4-a716-446655440001",
+          "period": "week-2026-35",
+          "summary": "You crave most around 4pm...",
+          "created_at": "2026-09-04T00:00:00.000Z"
+        },
+        "404": {
+          "error": "No insights found"
+        }
+      }
+    },
+    {
+      "id": "revenuecat-webhook",
+      "method": "POST",
+      "path": "/revenuecat-webhook",
+      "auth": false,
+      "authNote": "Verify Authorization: Bearer <REVENUECAT_WEBHOOK_SECRET>",
+      "phase": "P1",
+      "mobileUsesToday": false,
+      "description": "RevenueCat subscription events. Updates premium status server-side.",
+      "headers": {
+        "Authorization": "Bearer <REVENUECAT_WEBHOOK_SECRET>"
+      },
+      "requestBody": {
+        "event": {
+          "type": "INITIAL_PURCHASE",
+          "app_user_id": "usr_abc123",
+          "product_id": "swell_monthly",
+          "expiration_at_ms": 1728000000000
+        }
+      },
+      "eventsToHandle": [
+        "INITIAL_PURCHASE",
+        "RENEWAL",
+        "CANCELLATION",
+        "EXPIRATION"
+      ],
+      "response": {
+        "200": {
+          "received": true
+        }
+      },
+      "serverActions": [
+        "Map app_user_id to user_id",
+        "Store is_premium and premium_expires_at in profiles.meta or subscription table"
+      ]
+    },
+    {
+      "id": "subscription-get",
+      "method": "GET",
+      "path": "/subscription",
+      "auth": true,
+      "phase": "P1",
+      "mobileUsesToday": false,
+      "recommended": true,
+      "description": "Server-side premium status for feature gates. Mobile uses RevenueCat SDK for purchase UI.",
+      "queryParams": {
+        "app_id": { "type": "string", "required": true, "example": "swell" }
+      },
+      "response": {
+        "200": {
+          "is_premium": true,
+          "expires_at": "2026-10-04T00:00:00.000Z",
+          "product_id": "swell_monthly"
+        }
+      }
+    }
+  ],
+  "phaseSummary": {
+    "P0": {
+      "label": "Now — mobile already calls or needs immediately",
+      "endpoints": [
+        "GET /health",
+        "POST /api/auth/*",
+        "GET /profile",
+        "PUT /profile",
+        "POST /cravings",
+        "GET /cravings/stats",
+        "GET /dashboard"
+      ]
+    },
+    "P1": {
+      "label": "Phase 3 + 5 — reflection, AI, subscriptions",
+      "endpoints": [
+        "PATCH /cravings/:id",
+        "POST /storage/upload-url",
+        "POST /transcribe",
+        "POST /insights",
+        "GET /insights/latest",
+        "POST /revenuecat-webhook",
+        "GET /subscription"
+      ]
+    },
+    "P2": {
+      "label": "Nice to have",
+      "endpoints": [
+        "GET /cravings"
+      ]
+    }
+  },
+  "mobileIntegration": {
+    "currentlyCalled": [
+      "POST /cravings"
+    ],
+    "clientReadyNotWired": [
+      "GET /cravings/stats",
+      "GET /profile"
+    ],
+    "neededSoon": [
+      "GET /dashboard",
+      "PUT /profile",
+      "PATCH /cravings/:id",
+      "POST /storage/upload-url",
+      "POST /transcribe",
+      "GET /insights/latest"
+    ]
+  }
+}
