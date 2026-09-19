@@ -1,4 +1,12 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { ExpoConfig, ConfigContext } from 'expo/config';
+
+const googleServicesFile =
+  process.env.GOOGLE_SERVICES_JSON ||
+  (fs.existsSync(path.resolve(__dirname, 'google-services.json'))
+    ? './google-services.json'
+    : undefined);
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
@@ -29,9 +37,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     package: 'com.swell.quit',
     permissions: ['POST_NOTIFICATIONS', 'VIBRATE'],
-    ...(process.env.GOOGLE_SERVICES_JSON
-      ? { googleServicesFile: process.env.GOOGLE_SERVICES_JSON }
-      : {}),
+    ...(googleServicesFile ? { googleServicesFile } : {}),
   },
   plugins: [
     'expo-router',

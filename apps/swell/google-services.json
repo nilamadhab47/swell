@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "624248940997",
+    "project_id": "swell-61f09",
+    "storage_bucket": "swell-61f09.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:624248940997:android:9763f1c15a8fc0089d83ac",
+        "android_client_info": {
+          "package_name": "com.swell.quit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgM2AXFEMvZK6bn_wrAKrKqd-f2Xf_x4Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
