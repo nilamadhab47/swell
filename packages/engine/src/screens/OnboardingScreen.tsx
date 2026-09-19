@@ -144,6 +144,8 @@ function isAnswered(
   question: OnboardingQuestion,
   answers: OnboardingAnswers
 ): boolean {
+  if (question.id === 'name') return answers.name.trim().length >= 1;
+  if (question.id === 'age') return answers.age.trim().length > 0 && Number(answers.age) > 0;
   if (question.id === 'habit') return Boolean(parseHabit(answers.habit));
   if (question.id === 'reason') return answers.reason.trim().length >= 2;
   if (question.id === 'cigs_per_day') return answers.cigs_per_day.trim().length > 0;
@@ -174,6 +176,8 @@ export function OnboardingScreen() {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [teachIndex, setTeachIndex] = useState(0);
   const [answers, setAnswers] = useState<OnboardingAnswers>({
+    name: '',
+    age: '',
     habit: '',
     reason: '',
     cigs_per_day: '',
@@ -239,6 +243,8 @@ export function OnboardingScreen() {
 
   const currentValue = useMemo(() => {
     if (!question) return '';
+    if (question.id === 'name') return answers.name;
+    if (question.id === 'age') return answers.age;
     if (question.id === 'habit') return answers.habit;
     if (question.id === 'reason') return answers.reason;
     if (question.id === 'cigs_per_day') return answers.cigs_per_day;
@@ -609,11 +615,31 @@ export function OnboardingScreen() {
                     );
                   })}
                 </View>
+              ) : question.id === 'name' ? (
+                <TextInput
+                  value={answers.name}
+                  onChangeText={(text) => setAnswer('name', text)}
+                  placeholder={question.placeholder}
+                  placeholderTextColor={theme.text.secondary}
+                  autoCapitalize="words"
+                  autoFocus
+                  style={[
+                    styles.input,
+                    {
+                      color: theme.text.primary,
+                      borderColor: theme.border.subtle,
+                      backgroundColor: theme.surface.glass,
+                      fontFamily: theme.fonts.body,
+                    },
+                  ]}
+                />
               ) : (
                 <>
                   <TextInput
                     value={currentValue}
                     onChangeText={(text) => {
+                      if (question.id === 'age')
+                        setAnswer('age', text.replace(/[^0-9]/g, '').slice(0, 3));
                       if (question.id === 'cigs_per_day')
                         setAnswer('cigs_per_day', text.replace(/[^0-9]/g, ''));
                       if (question.id === 'cost_per_pack')

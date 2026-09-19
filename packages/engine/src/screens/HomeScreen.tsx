@@ -10,9 +10,11 @@ import { ScorePlaque } from '../components/ScorePlaque';
 import { useNicheConfig } from '../config/NicheConfigProvider';
 import { pickDailyQuote } from '../data/format';
 import { useCravingStats, useDashboard } from '../data/hooks/useDashboard';
+import { useProfile } from '../data/hooks/useProfile';
 import type { HealthTimelineItem } from '../data/types';
 import { useFlowStore } from '../flow/useFlowStore';
 import { FadeBlock } from '../motion/FadeBlock';
+import { useOnboardingStore } from '../onboarding/useOnboardingStore';
 import { useTypography } from '../theme/useTypography';
 import { useTheme } from '../theme/useTheme';
 
@@ -26,6 +28,9 @@ export function HomeScreen({ onTabPress, hideNav }: HomeScreenProps) {
   const config = useNicheConfig();
   const { caption, body, title } = useTypography();
   const startFight = useFlowStore((s) => s.startFight);
+  const storedName = useOnboardingStore((s) => s.answers.name);
+  const { data: profile } = useProfile();
+  const firstName = (storedName || profile?.name || '').trim().split(/\s+/)[0] || '';
   const { beatenThisWeek, totalBeaten, isLoading, isFetching, isError, refetch } =
     useCravingStats();
   const { data: dashboard } = useDashboard();
@@ -129,7 +134,7 @@ export function HomeScreen({ onTabPress, hideNav }: HomeScreenProps) {
                   },
                 ]}
               >
-                Feeling the pull? Tap here and ride it out.
+                Feeling the pull?{firstName ? ` ${firstName}, tap` : ' Tap'} here and ride it out.
               </Text>
             </FadeBlock>
 

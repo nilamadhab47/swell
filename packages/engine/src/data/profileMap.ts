@@ -15,6 +15,8 @@ export function extrasBool(extras: Record<string, unknown> | undefined, key: str
 export function profileToAnswers(profile: Profile): OnboardingAnswers {
   const extras = profile.extras;
   return {
+    name: profile.name ?? extrasString(extras, 'name') ?? '',
+    age: profile.age != null ? String(profile.age) : extrasString(extras, 'age'),
     habit: extrasString(extras, 'habit'),
     reason: profile.quitReason ?? extrasString(extras, 'reason') ?? '',
     cigs_per_day: extrasString(extras, 'cigs_per_day'),
@@ -31,12 +33,16 @@ export function answersToProfile(answers: OnboardingAnswers): ProfileUpdate {
     quit && !Number.isNaN(quit.getTime())
       ? Math.max(0, Math.floor((Date.now() - quit.getTime()) / 86_400_000))
       : undefined;
+  const age = Number(answers.age);
 
   return {
+    name: answers.name.trim() || undefined,
     quitReason: answers.reason.trim() || undefined,
     daysSmokeFree,
     extras: {
       onboardingCompleted: true,
+      name: answers.name.trim() || undefined,
+      age: Number.isFinite(age) && age > 0 ? age : undefined,
       habit: answers.habit || undefined,
       cigs_per_day: Number.isFinite(cigs) ? cigs : undefined,
       cost_per_pack: Number.isFinite(cost) ? cost : undefined,

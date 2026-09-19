@@ -171,21 +171,41 @@ export function getPhase(remainingSecs: number): CravingPhase {
  *
  * Uses a seeded selection so the same second always returns the same message
  * within a session, preventing flicker.
+ *
+ * If `name` is provided, some messages are personalized with the user's first name.
  */
 export function getMessageForTime(
   remainingSecs: number,
   sessionSeed?: number,
+  name?: string,
 ): CravingMessage | null {
   const candidates = MESSAGES.filter(
     (m) => remainingSecs >= m.minRemaining && remainingSecs <= m.maxRemaining,
   );
 
   if (candidates.length === 0) return null;
-  if (candidates.length === 1) return candidates[0];
 
   const seed = sessionSeed ?? 0;
-  const idx = Math.abs(seed + Math.floor(remainingSecs / 15)) % candidates.length;
-  return candidates[idx];
+  const idx = candidates.length === 1
+    ? 0
+    : Math.abs(seed + Math.floor(remainingSecs / 15)) % candidates.length;
+  const msg = candidates[idx];
+
+  if (!name) return msg;
+
+  return { ...msg, text: personalize(msg.text, name) };
+}
+
+/** Inject the user's first name into select message patterns. */
+function personalize(text: string, name: string): string {
+  const personalMap: Record<string, string> = {
+    "You showed up. That's the hardest part.": `${name}, you showed up. That's the hardest part.`,
+    "You're already getting through it.": `${name}, you're already getting through it.`,
+    'One minute. Keep going.': `One minute, ${name}. Keep going.`,
+    'Almost there.': `Almost there, ${name}.`,
+    'You made it through.': `${name}, you made it through.`,
+  };
+  return personalMap[text] ?? text;
 }
 
 /**

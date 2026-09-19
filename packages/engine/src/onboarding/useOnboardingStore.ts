@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 
 export interface OnboardingAnswers {
+  name: string;
+  age: string;
   habit: string;
   reason: string;
   cigs_per_day: string;
@@ -9,6 +11,8 @@ export interface OnboardingAnswers {
 }
 
 const EMPTY_ANSWERS: OnboardingAnswers = {
+  name: '',
+  age: '',
   habit: '',
   reason: '',
   cigs_per_day: '',

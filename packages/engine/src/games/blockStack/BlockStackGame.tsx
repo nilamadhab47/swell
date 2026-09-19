@@ -72,12 +72,14 @@ interface BlockStackGameProps {
   durationSecs: number;
   onComplete: (actualDurationSecs: number) => void;
   onEarlyExit?: () => void;
+  userName?: string;
 }
 
 export function BlockStackGame({
   durationSecs,
   onComplete,
   onEarlyExit,
+  userName,
 }: BlockStackGameProps) {
   const theme = useTheme();
   const pieceColors = useMemo(() => getPieceColors(theme), [theme]);
@@ -515,6 +517,7 @@ export function BlockStackGame({
       <CravingMessageOverlay
         remainingSecs={remainingSecs}
         sessionSeed={sessionSeed.current}
+        userName={userName}
       />
 
       {/* Game board */}

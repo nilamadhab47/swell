@@ -20,6 +20,8 @@ import { useTheme } from '../theme/useTheme';
 interface CravingMessageOverlayProps {
   remainingSecs: number;
   sessionSeed: number;
+  /** User's first name for personalized messages. */
+  userName?: string;
 }
 
 const FADE_IN = 600;
@@ -29,6 +31,7 @@ const FADE_OUT = 800;
 export function CravingMessageOverlay({
   remainingSecs,
   sessionSeed,
+  userName,
 }: CravingMessageOverlayProps) {
   const theme = useTheme();
   const [displayText, setDisplayText] = useState('');
@@ -37,7 +40,7 @@ export function CravingMessageOverlay({
   const translateY = useSharedValue(6);
 
   useEffect(() => {
-    const msg = getMessageForTime(remainingSecs, sessionSeed);
+    const msg = getMessageForTime(remainingSecs, sessionSeed, userName);
     if (!msg || msg.id === lastMessageId.current) return;
 
     lastMessageId.current = msg.id;

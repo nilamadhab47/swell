@@ -12,6 +12,20 @@ export const nicheConfig: NicheConfig = {
   primaryActionLabel: 'Ride it out',
   onboarding: [
     {
+      id: 'name',
+      prompt: 'What should we call you?',
+      type: 'text',
+      placeholder: 'Your first name',
+      metaKey: 'name',
+    },
+    {
+      id: 'age',
+      prompt: 'How old are you?',
+      type: 'number',
+      placeholder: '28',
+      metaKey: 'age',
+    },
+    {
       id: 'habit',
       prompt: 'What are you putting down?',
       type: 'select',

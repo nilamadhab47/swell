@@ -69,6 +69,7 @@ interface FlappyGameProps {
   durationSecs: number;
   onComplete: (actualDurationSecs: number) => void;
   onEarlyExit?: () => void;
+  userName?: string;
 }
 
 function makePipe(id: number, x: number): Pipe {
@@ -82,6 +83,7 @@ export function FlappyGame({
   durationSecs,
   onComplete,
   onEarlyExit,
+  userName,
 }: FlappyGameProps) {
   const theme = useTheme();
 
@@ -308,6 +310,7 @@ export function FlappyGame({
       <CravingMessageOverlay
         remainingSecs={remainingSecs}
         sessionSeed={sessionSeed.current}
+        userName={userName}
       />
 
       {/* Playfield */}

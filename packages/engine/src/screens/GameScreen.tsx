@@ -8,6 +8,8 @@ import { postCraving } from '../data/api';
 import { cravingsQueryKey } from '../data/hooks/useCravings';
 import { dashboardQueryKey } from '../data/hooks/useDashboard';
 import { useFlowStore } from '../flow/useFlowStore';
+import { useOnboardingStore } from '../onboarding/useOnboardingStore';
+import { useProfile } from '../data/hooks/useProfile';
 
 export function GameScreen() {
   const config = useNicheConfig();
@@ -15,6 +17,9 @@ export function GameScreen() {
   const session = useFlowStore((s) => s.session);
   const completeGame = useFlowStore((s) => s.completeGame);
   const setLastCravingId = useFlowStore((s) => s.setLastCravingId);
+  const storedName = useOnboardingStore((s) => s.answers.name);
+  const { data: profile } = useProfile();
+  const firstName = (storedName || profile?.name || '').trim().split(/\s+/)[0] || undefined;
 
   const handleComplete = async (durationSecs: number) => {
     completeGame(durationSecs);
@@ -53,6 +58,7 @@ export function GameScreen() {
       <ScribbleGame
         durationSecs={config.gameDurationSecs}
         onComplete={handleComplete}
+        userName={firstName}
       />
     );
   }
@@ -62,6 +68,7 @@ export function GameScreen() {
       <FlappyGame
         durationSecs={config.gameDurationSecs}
         onComplete={handleComplete}
+        userName={firstName}
       />
     );
   }
@@ -70,6 +77,7 @@ export function GameScreen() {
     <BlockStackGame
       durationSecs={config.gameDurationSecs}
       onComplete={handleComplete}
+      userName={firstName}
     />
   );
 }

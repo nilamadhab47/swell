@@ -74,6 +74,7 @@ export function SettingsScreen({
   const cost = answers.cost_per_pack.trim();
   const reason = answers.reason.trim();
   const habit = parseHabit(answers.habit);
+  const userName = (answers.name || user?.name || '').trim();
 
   return (
     <View style={[styles.container, { backgroundColor: hideNav ? 'transparent' : theme.surface.canvas }]}>
@@ -86,7 +87,7 @@ export function SettingsScreen({
       >
         <FadeBlock delay={40}>
           <Text style={[headline, { color: theme.text.primary }]}>
-            This is yours
+            {userName ? `${userName}'s story` : 'This is yours'}
           </Text>
           <Text
             style={[

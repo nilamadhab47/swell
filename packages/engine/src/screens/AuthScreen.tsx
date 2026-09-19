@@ -31,7 +31,6 @@ export function AuthScreen() {
   const { display, body, label, title } = useTypography();
   const requestPhoneCode = useAuthStore((s) => s.requestPhoneCode);
   const verifyPhoneCode = useAuthStore((s) => s.verifyPhoneCode);
-  const loginWithGoogle = useAuthStore((s) => s.loginWithGoogle);
   const loginWithApple = useAuthStore((s) => s.loginWithApple);
   const login = useAuthStore((s) => s.login);
   const register = useAuthStore((s) => s.register);
@@ -99,7 +98,7 @@ export function AuthScreen() {
         ? `We sent a 6-digit code to ${trimmedEmail}.${
             __DEV__ ? ' Check the backend terminal.' : ''
           }`
-      : 'Your number is enough. Google or Apple if you prefer.';
+      : 'Your number is enough. Apple sign-in if you prefer.';
 
   const inputStyle = [
     styles.input,
@@ -168,6 +167,8 @@ export function AuthScreen() {
               placeholder="000000"
               placeholderTextColor={theme.text.secondary}
               keyboardType="number-pad"
+              textContentType="oneTimeCode"
+              autoComplete="sms-otp"
               maxLength={6}
               style={[
                 ...inputStyle,
@@ -231,13 +232,6 @@ export function AuthScreen() {
                       setMode('otp');
                     })
                   }
-                  style={{ width: '100%', maxWidth: 320 }}
-                />
-                <GlowingButton
-                  label="Continue with Google"
-                  variant="glass"
-                  disabled={busy}
-                  onPress={() => run(() => loginWithGoogle(config.appId))}
                   style={{ width: '100%', maxWidth: 320 }}
                 />
                 {appleReady ? (

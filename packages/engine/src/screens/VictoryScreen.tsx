@@ -102,10 +102,12 @@ export function VictoryScreen() {
   const goToReflect = useFlowStore((s) => s.goToReflect);
   const { data: profile } = useProfile();
   const storedReason = useOnboardingStore((s) => s.answers.reason);
+  const storedName = useOnboardingStore((s) => s.answers.name);
   const { beatenThisWeek, daysClear, moneyReclaimed } = useCravingStats();
   const { ads } = useMonetization();
   const { headline, body, caption } = useTypography();
 
+  const firstName = (storedName || profile?.name || '').trim().split(/\s+/)[0] || '';
   const why = victoryWhyLine(storedReason || profile?.quitReason);
   const fromBeaten = useRef(Math.max(0, beatenThisWeek - 1));
 
@@ -185,7 +187,7 @@ export function VictoryScreen() {
               },
             ]}
           >
-            You stayed.
+            {firstName ? `${firstName}, you stayed.` : 'You stayed.'}
           </Text>
           {why ? (
             <Text

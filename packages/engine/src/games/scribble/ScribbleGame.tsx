@@ -62,6 +62,7 @@ interface ScribbleGameProps {
   durationSecs: number;
   onComplete: (actualDurationSecs: number) => void;
   onEarlyExit?: () => void;
+  userName?: string;
 }
 
 const BRUSH_SIZES = [
@@ -121,6 +122,7 @@ export function ScribbleGame({
   durationSecs,
   onComplete,
   onEarlyExit,
+  userName,
 }: ScribbleGameProps) {
   const theme = useTheme();
   const palette = useMemo(() => getPalette(theme.scheme), [theme.scheme]);
@@ -292,6 +294,7 @@ export function ScribbleGame({
       <CravingMessageOverlay
         remainingSecs={remainingSecs}
         sessionSeed={sessionSeed.current}
+        userName={userName}
       />
 
       {/* Drawing canvas */}
