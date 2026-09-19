@@ -32,8 +32,12 @@ export default function PrivacyPage() {
             amount, cost, and when you started.
           </li>
           <li>
-            <strong>Craving logs:</strong> wins, duration, optional notes, and optional voice recordings / transcripts
-            you choose to save.
+            <strong>Craving logs:</strong> wins, duration, the game you played, and optional text notes you choose to
+            save.
+          </li>
+          <li>
+            <strong>Notifications:</strong> if you allow alerts, an Expo push token for this device, plus optional
+            platform and timezone so we can send at a reasonable hour.
           </li>
           <li>
             <strong>Device & security:</strong> access/refresh tokens, and basic technical logs needed to run the
@@ -43,25 +47,27 @@ export default function PrivacyPage() {
         <h2>How we use it</h2>
         <p>
           To create your account, send one-time passcodes, keep score of cravings you beat, compute days clear /
-          money reclaimed, and improve reliability. We do not use your notes or recordings for ads. Swell is not a
-          medical device and does not give medical advice.
+          money reclaimed, and (if you opted in) send one or two short reminder notifications a day. Reminder copy
+          may be personalized with your name, days clear, and quit reason. We do not use your notes for ads. Swell
+          is not a medical device and does not give medical advice.
         </p>
         <h2>Who we share with</h2>
         <p>
           Processors that help us run Swell: hosting (Railway), database (Neon), SMS one-time codes (Twilio), email
-          one-time codes (SendGrid), Google and Apple if you sign in with them. They only get what they need to
-          perform that job.
+          one-time codes (SendGrid), push delivery (Expo), optional reminder wording (Anthropic), and Google or Apple
+          if you sign in with them. They only get what they need to perform that job.
         </p>
         <h2>Retention</h2>
         <p>
-          We keep your account and logs while the account is active. You can ask us to delete your account and
-          associated data at <a href="mailto:nilamadhab47@gmail.com">nilamadhab47@gmail.com</a>. We will complete deletion
-          within 30 days, except where we must keep a record for legal or security reasons.
+          We keep your account and logs while the account is active. Push tokens stay until you sign out, disable
+          notifications, or delete the account. You can ask us to delete your account and associated data at{' '}
+          <a href="mailto:nilamadhab47@gmail.com">nilamadhab47@gmail.com</a>. We will complete deletion within 30
+          days, except where we must keep a record for legal or security reasons.
         </p>
         <h2>Your rights</h2>
         <p>
           Depending on where you live, you may request access, correction, or deletion of your personal data, and
-          withdraw consent for optional notes or voice. Email us and we will help.
+          withdraw consent for optional notes or notifications. Email us and we will help.
         </p>
         <h2>Children</h2>
         <p>Swell is not directed at children under 16.</p>

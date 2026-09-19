@@ -22,7 +22,8 @@ export default function TermsPage() {
         <h2>Your account</h2>
         <p>
           You must provide accurate sign-in details (phone, email, Google, or Apple). You are responsible for the
-          device that stays signed in. Do not share your one-time codes.
+          device that stays signed in. Do not share your one-time codes. Optional push reminders are not required
+          to use Swell; you can refuse the permission or later disable notifications on the device.
         </p>
         <h2>Acceptable use</h2>
         <ul>
@@ -49,8 +50,9 @@ export default function TermsPage() {
         </p>
         <h2>Termination</h2>
         <p>
-          You can stop using Swell at any time and email{' '}
-          <a href="mailto:nilamadhab47@gmail.com">nilamadhab47@gmail.com</a> to delete your account. We may suspend accounts
+          You can stop using Swell at any time. To delete your account and associated data, email{' '}
+          <a href="mailto:nilamadhab47@gmail.com">nilamadhab47@gmail.com</a>. In-app account deletion is not in the
+          product yet; until it is, email is the way we honor that request within 30 days. We may suspend accounts
           that abuse the service.
         </p>
         <h2>Contact</h2>
