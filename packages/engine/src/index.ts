@@ -19,6 +19,11 @@ export type { FlowState, GameId, ReflectionNote } from './flow/types';
 
 export { BlockStackGame } from './games/blockStack/BlockStackGame';
 
+export { getMessageForTime, getPhase, getAllMessages, MESSAGE_TRIGGER_SECONDS } from './craving/messages';
+export type { CravingMessage, CravingPhase } from './craving/messages';
+export { CravingTimer } from './craving/CravingTimer';
+export { CravingMessageOverlay } from './craving/CravingMessageOverlay';
+
 export { BreathingOrb } from './components/BreathingOrb';
 export { ScorePlaque } from './components/ScorePlaque';
 export { GlowingButton } from './components/GlowingButton';
