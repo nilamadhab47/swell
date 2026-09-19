@@ -1,13 +1,21 @@
+const DEFAULT_SITE_URL = 'https://useswell.site';
+
+/** Treat unset or blank env values as missing (Vercel often sets empty strings). */
+function envOrDefault(value: string | undefined, fallback: string): string {
+  const trimmed = value?.trim();
+  return trimmed || fallback;
+}
+
 export const site = {
   name: 'Swell',
   tagline: 'Three minutes. Then it’s gone.',
   title: 'Swell — Beat Smoking Cravings, One at a Time',
   description:
     'Swell helps you quit smoking or vaping by riding out the next craving. A calm 3-minute game. No lectures. Just a score of the ones that didn’t get you.',
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://useswell.site',
+  url: envOrDefault(process.env.NEXT_PUBLIC_SITE_URL, DEFAULT_SITE_URL),
   email: 'nilamadhab47@gmail.com',
-  appStoreUrl: process.env.NEXT_PUBLIC_APP_STORE_URL ?? '#download',
-  playStoreUrl: process.env.NEXT_PUBLIC_PLAY_STORE_URL ?? '#download',
+  appStoreUrl: envOrDefault(process.env.NEXT_PUBLIC_APP_STORE_URL, '#download'),
+  playStoreUrl: envOrDefault(process.env.NEXT_PUBLIC_PLAY_STORE_URL, '#download'),
 };
 
 export const nav = [

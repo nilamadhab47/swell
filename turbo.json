@@ -3,7 +3,13 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".expo/**", ".next/**"]
+      "outputs": ["dist/**", ".expo/**", ".next/**"],
+      "env": [
+        "NEXT_PUBLIC_SITE_URL",
+        "NEXT_PUBLIC_APP_STORE_URL",
+        "NEXT_PUBLIC_PLAY_STORE_URL",
+        "NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION"
+      ]
     },
     "dev": {
       "cache": false,
