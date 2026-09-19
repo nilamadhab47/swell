@@ -18,6 +18,7 @@ export { ReflectScreen } from './screens/ReflectScreen';
 export type { FlowState, GameId, ReflectionNote } from './flow/types';
 
 export { BlockStackGame } from './games/blockStack/BlockStackGame';
+export { ScribbleGame } from './games/scribble/ScribbleGame';
 
 export { getMessageForTime, getPhase, getAllMessages, MESSAGE_TRIGGER_SECONDS } from './craving/messages';
 export type { CravingMessage, CravingPhase } from './craving/messages';

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { BlockStackGame } from '../games/blockStack/BlockStackGame';
+import { ScribbleGame } from '../games/scribble/ScribbleGame';
 import { useNicheConfig } from '../config/NicheConfigProvider';
 import { postCraving } from '../data/api';
 import { cravingsQueryKey } from '../data/hooks/useCravings';
@@ -43,6 +44,17 @@ export function GameScreen() {
       // Offline-first: victory still shows even if API fails
     }
   };
+
+  const gameId = session?.selectedGame ?? 'block_stack';
+
+  if (gameId === 'scribble') {
+    return (
+      <ScribbleGame
+        durationSecs={config.gameDurationSecs}
+        onComplete={handleComplete}
+      />
+    );
+  }
 
   return (
     <BlockStackGame

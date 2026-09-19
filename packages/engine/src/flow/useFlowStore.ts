@@ -28,14 +28,13 @@ export const useFlowStore = create<FlowStore>((set) => ({
   lastReflection: null,
   lastCravingId: null,
 
-  // Only one game exists today, so "fight" goes straight into it.
-  // When more games ship, route to 'game_select' here instead.
+  // Two games available — route through game_select.
   startFight: () =>
     set({
-      state: 'game',
+      state: 'game_select',
       session: {
         startedAt: Date.now(),
-        selectedGame: 'block_stack',
+        selectedGame: null,
         durationSecs: 0,
         beaten: false,
       },

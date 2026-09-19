@@ -2,7 +2,6 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { AppHeader } from '../components/AppHeader';
-import { ArtEmblem, ART } from '../components/ArtEmblem';
 import { GlassCard } from '../components/GlassCard';
 import { OceanBackground } from '../components/OceanBackground';
 import { useFlowStore } from '../flow/useFlowStore';
@@ -26,17 +25,17 @@ const GAMES: {
     available: true,
   },
   {
+    id: 'scribble',
+    name: 'Scribble',
+    line: 'Draw anything. Fill the time.',
+    icon: '✎',
+    available: true,
+  },
+  {
     id: 'color_match',
     name: 'Color Match',
     line: 'Coming when the next wave needs it.',
     icon: '◉',
-    available: false,
-  },
-  {
-    id: 'flow_connect',
-    name: 'Flow Connect',
-    line: 'A slower puzzle for later.',
-    icon: '∞',
     available: false,
   },
   {
@@ -61,13 +60,8 @@ export function GameSelectScreen() {
 
       <View style={styles.content}>
         <FadeBlock delay={40}>
-          <ArtEmblem
-            source={ART.breathe}
-            size={128}
-            style={styles.breatheArt}
-          />
           <Text style={[headline, { color: theme.text.primary, textAlign: 'center' }]}>
-            Pick a place to wait it out.
+            Your 3-minute reset
           </Text>
           <Text
             style={[
@@ -80,7 +74,7 @@ export function GameSelectScreen() {
               },
             ]}
           >
-            Three minutes. The clock is already running in your favor.
+            Pick something to do while the craving passes.
           </Text>
         </FadeBlock>
 
@@ -101,7 +95,7 @@ export function GameSelectScreen() {
                   <Text
                     style={{
                       fontSize: 28,
-                      color: theme.text.secondary,
+                      color: game.available ? theme.accent.aqua : theme.text.secondary,
                     }}
                   >
                     {game.icon}
@@ -146,10 +140,6 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     paddingBottom: 48,
     justifyContent: 'center',
-  },
-  breatheArt: {
-    alignSelf: 'center',
-    marginBottom: 16,
   },
   grid: {
     marginTop: 40,
