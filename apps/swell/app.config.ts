@@ -45,6 +45,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     typedRoutes: true,
   },
   extra: {
-    apiUrl: process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000',
+    apiUrl:
+      process.env.EXPO_PUBLIC_API_URL ??
+      'https://paisahipaisahoga-production.up.railway.app',
   },
 });
