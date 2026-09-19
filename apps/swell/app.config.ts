@@ -55,7 +55,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       'https://paisahipaisahoga-production.up.railway.app',
     // Required for Expo push tokens. Set EAS_PROJECT_ID (from `eas init`).
     eas: {
-      projectId: process.env.EAS_PROJECT_ID,
+      projectId:
+        process.env.EAS_PROJECT_ID ?? '4fa0b695-ecd1-44e8-816e-9d9369b89b89',
     },
   },
 });
