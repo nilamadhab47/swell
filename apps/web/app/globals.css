@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Light-first — matches the Swell app */
+  --canvas: #eaf4f8;
+  --canvas-top: #cfe8f2;
+  --canvas-warm: #f7f0e8;
+  --raised: #ffffff;
+  --sunken: #dceef4;
+  --overlay: rgba(255, 255, 255, 0.82);
+
+  --ink: #0e2a36;
+  --mist: #43606c;
+  --hush: #6f8b97;
+
+  --coral: #f04a2f;
+  --coral-pressed: #d63d24;
+  --aqua: #10a89a;
+  --aqua-bright: #14b3a6;
+  --mint: #1fbf8a;
+  --sunrise: #f0a84b;
+
+  --line: rgba(14, 42, 54, 0.1);
+  --card-shadow: 0 24px 60px -28px rgba(14, 42, 54, 0.35);
+
+  --font-display: var(--font-quicksand), system-ui, sans-serif;
+  --font-body: var(--font-rubik), system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+}
+
+::selection {
+  background: color-mix(in srgb, var(--coral) 65%, transparent);
+  color: white;
+}
+
+:focus-visible {
+  outline: 2px solid var(--aqua);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
