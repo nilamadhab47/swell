@@ -236,6 +236,12 @@ export async function logoutRemote(appId: string): Promise<void> {
   }
 }
 
+export async function deleteAccountRemote(appId: string): Promise<void> {
+  await request('/authentication/me', appId, { method: 'DELETE' }, {
+    skipRefresh: true,
+  });
+}
+
 export async function getMe(appId: string): Promise<unknown> {
   return request('/authentication/me', appId);
 }
@@ -393,6 +399,26 @@ export async function createProfile(
     body: JSON.stringify(payload),
   });
   return normalizeProfile(data);
+}
+
+export async function registerPushToken(
+  appId: string,
+  payload: { token: string; platform?: string; timezone?: string }
+): Promise<unknown> {
+  return request('/push/register', appId, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function unregisterPushToken(
+  appId: string,
+  token: string
+): Promise<unknown> {
+  return request('/push/unregister', appId, {
+    method: 'POST',
+    body: JSON.stringify({ token }),
+  });
 }
 
 export { defaultAppId };

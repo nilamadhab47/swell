@@ -32,6 +32,13 @@ const GAMES: {
     available: true,
   },
   {
+    id: 'flappy',
+    name: 'Float',
+    line: 'Tap to drift. You can’t lose.',
+    icon: '🪶',
+    available: true,
+  },
+  {
     id: 'color_match',
     name: 'Color Match',
     line: 'Coming when the next wave needs it.',

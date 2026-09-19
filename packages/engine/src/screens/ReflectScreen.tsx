@@ -10,14 +10,12 @@ import {
 } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { AppHeader } from '../components/AppHeader';
-import { GlassCard } from '../components/GlassCard';
 import { GlowingButton } from '../components/GlowingButton';
 import { OceanBackground } from '../components/OceanBackground';
 import { useNicheConfig } from '../config/NicheConfigProvider';
 import { patchCraving } from '../data/api';
 import { cravingsQueryKey } from '../data/hooks/useCravings';
 import { useFlowStore } from '../flow/useFlowStore';
-import { formatElapsed, useVoiceNote } from '../hooks/useVoiceNote';
 import { maybeShowPostVictoryAd, useMonetization } from '../monetization';
 import { useTheme } from '../theme/useTheme';
 import { useTypography } from '../theme/useTypography';
@@ -34,27 +32,12 @@ export function ReflectScreen() {
   const queryClient = useQueryClient();
 
   const [note, setNote] = useState('');
-  const voice = useVoiceNote();
-
-  const isRecording = voice.state === 'recording';
-  const isTranscribing = voice.state === 'transcribing';
-
-  const handleToggleVoice = async () => {
-    if (isRecording) {
-      const transcript = await voice.stop();
-      setNote((current) => current.trim() || transcript);
-      return;
-    }
-    await voice.start();
-  };
 
   const handleSave = () => {
-    if (isRecording || isTranscribing) return;
     const text = note.trim();
-    if (!text && !voice.uri) return;
+    if (!text) return;
     saveReflection({
       triggerNote: text,
-      voiceNoteUri: voice.uri ?? undefined,
       transcript: text || undefined,
     });
     void maybeShowPostVictoryAd(ads);
@@ -73,7 +56,7 @@ export function ReflectScreen() {
       });
   };
 
-  const canSave = note.trim().length > 0 || Boolean(voice.uri);
+  const canSave = note.trim().length > 0;
 
   return (
     <View style={[styles.container, { backgroundColor: theme.surface.canvas }]}>
@@ -124,57 +107,6 @@ export function ReflectScreen() {
             ]}
           />
 
-          <GlassCard style={styles.voiceCard}>
-            <Text style={[label, { color: theme.text.secondary }]}>
-              Voice note
-            </Text>
-            <Pressable
-              onPress={handleToggleVoice}
-              disabled={isTranscribing}
-              style={[
-                styles.mic,
-                {
-                  backgroundColor: isRecording
-                    ? theme.accent.coral
-                    : theme.surface.bright,
-                  borderColor: isRecording
-                    ? theme.accent.coral
-                    : theme.border.subtle,
-                  opacity: isTranscribing ? 0.6 : 1,
-                },
-              ]}
-            >
-              <Text
-                style={{
-                  fontSize: 28,
-                  color: isRecording
-                    ? theme.text.inverse
-                    : theme.text.primary,
-                }}
-              >
-                {isRecording ? '■' : '●'}
-              </Text>
-            </Pressable>
-            <Text
-              style={[
-                body,
-                {
-                  color: theme.text.secondary,
-                  marginTop: 12,
-                  textAlign: 'center',
-                },
-              ]}
-            >
-              {isTranscribing
-                ? 'Transcribing…'
-                : isRecording
-                  ? `Recording  ${formatElapsed(voice.elapsedMs)}`
-                  : voice.uri
-                    ? 'Voice saved. Tweak the words above if you want.'
-                    : 'Tap to talk it out. We’ll turn it into words.'}
-            </Text>
-          </GlassCard>
-
           <View style={styles.footer}>
             <GlowingButton
               label="Keep this one"
@@ -221,20 +153,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     textAlignVertical: 'top',
-  },
-  voiceCard: {
-    marginTop: 20,
-    padding: 20,
-    alignItems: 'center',
-  },
-  mic: {
-    marginTop: 16,
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    borderWidth: StyleSheet.hairlineWidth,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   footer: {
     marginTop: 'auto',

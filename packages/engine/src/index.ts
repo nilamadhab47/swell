@@ -19,6 +19,7 @@ export type { FlowState, GameId, ReflectionNote } from './flow/types';
 
 export { BlockStackGame } from './games/blockStack/BlockStackGame';
 export { ScribbleGame } from './games/scribble/ScribbleGame';
+export { FlappyGame } from './games/flappy/FlappyGame';
 
 export { getMessageForTime, getPhase, getAllMessages, MESSAGE_TRIGGER_SECONDS } from './craving/messages';
 export type { CravingMessage, CravingPhase } from './craving/messages';
@@ -52,6 +53,7 @@ export {
   resendEmailOtp,
   loginEmail,
   logoutRemote,
+  deleteAccountRemote,
   requestPhoneOtp,
   verifyPhoneOtp,
   getGoogleAuthUrl,
@@ -65,10 +67,13 @@ export {
   getProfile,
   updateProfile,
   createProfile,
+  registerPushToken,
+  unregisterPushToken,
 } from './data/api';
 export { useDashboard, useCravingStats, dashboardQueryKey } from './data/hooks/useDashboard';
 export { useCravings, useLatestNote, cravingsQueryKey } from './data/hooks/useCravings';
 export { useProfile, profileQueryKey } from './data/hooks/useProfile';
+export { usePushNotifications } from './hooks/usePushNotifications';
 export { formatMoney, formatTimeSaved, formatDays, pickDailyQuote, moneyInRealTerms, buildProgressInsight } from './data/format';
 export type {
   ApiResponse,

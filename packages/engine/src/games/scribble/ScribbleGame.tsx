@@ -95,6 +95,28 @@ function getPalette(scheme: 'light' | 'dark') {
   ];
 }
 
+const DRAWING_PROMPTS = [
+  'Draw a tree 🌳',
+  'Draw a wave 🌊',
+  'Draw a sunset 🌅',
+  'Draw a mountain ⛰️',
+  'Draw your happy place',
+  'Draw a flower 🌸',
+  'Draw a starry sky ✨',
+  'Draw a boat on water 🚣',
+  'Draw a house 🏡',
+  'Draw a rainbow 🌈',
+  'Draw a bird in flight 🕊️',
+  'Draw a calm lake',
+  'Draw a garden path',
+  'Draw anything you want',
+  'Fill the canvas with color',
+];
+
+function getRandomPrompt(seed: number): string {
+  return DRAWING_PROMPTS[seed % DRAWING_PROMPTS.length];
+}
+
 export function ScribbleGame({
   durationSecs,
   onComplete,
@@ -318,11 +340,11 @@ export function ScribbleGame({
           </Group>
         </Canvas>
 
-        {/* Empty state hint */}
+        {/* Empty state hint with drawing prompt */}
         {strokes.length === 0 && !currentPath && (
           <View style={styles.emptyHint} pointerEvents="none">
             <Text style={[styles.emptyText, { color: theme.text.muted }]}>
-              Draw anything.
+              {getRandomPrompt(sessionSeed.current)}
             </Text>
             <Text style={[styles.emptySubtext, { color: theme.text.muted }]}>
               Fill the time. The craving will pass.

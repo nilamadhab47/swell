@@ -6,7 +6,7 @@ export type FlowState =
   | 'victory'
   | 'reflect';
 
-export type GameId = 'block_stack' | 'scribble' | 'color_match' | 'flow_connect' | 'tap_rhythm';
+export type GameId = 'block_stack' | 'scribble' | 'flappy' | 'color_match' | 'flow_connect' | 'tap_rhythm';
 
 export interface CravingSession {
   startedAt: number;

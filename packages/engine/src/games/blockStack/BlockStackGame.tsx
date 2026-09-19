@@ -27,13 +27,6 @@ import {
   Text,
   View,
 } from 'react-native';
-import {
-  Canvas,
-  Group,
-  LinearGradient,
-  RoundedRect,
-  vec,
-} from '@shopify/react-native-skia';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -115,7 +108,7 @@ export function BlockStackGame({
   const finish = useCallback(() => {
     if (completedRef.current) return;
     completedRef.current = true;
-    if (tickRef.current) clearInterval(tickRef.current);
+    if (tickRef.current) clearTimeout(tickRef.current as unknown as ReturnType<typeof setTimeout>);
 
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
@@ -160,66 +153,66 @@ export function BlockStackGame({
     return () => sub.remove();
   }, [durationSecs, finish]);
 
-  // ----- Lock piece -----
-  const lockPiece = useCallback(() => {
-    setBoard((prev) => {
-      const placed = placePiece(prev, piece);
-      const { board: cleared, cleared: lines, clearedRows } = clearLines(placed);
+  // ----- Lock a piece into the board, clear lines, spawn next -----
+  const lockPiece = useCallback(
+    (pieceToLock: Piece) => {
+      setBoard((prev) => {
+        const placed = placePiece(prev, pieceToLock);
+        const { board: cleared, cleared: lines, clearedRows } = clearLines(placed);
 
-      if (lines > 0) {
-        const points = lines >= 4 ? 800 : lines >= 3 ? 500 : lines >= 2 ? 300 : 100;
-        setScore((s) => s + points);
-        setClearedRowsFlash(clearedRows);
+        if (lines > 0) {
+          const points = lines >= 4 ? 800 : lines >= 3 ? 500 : lines >= 2 ? 300 : 100;
+          setScore((s) => s + points);
+          setClearedRowsFlash(clearedRows);
 
-        // Score popup
-        setScorePopup({ points, key: Date.now() });
-        popupOpacity.value = 0;
-        popupY.value = 0;
-        popupOpacity.value = withSequence(
-          withTiming(1, { duration: 150 }),
-          withTiming(1, { duration: 600 }),
-          withTiming(0, { duration: 400 }),
-        );
-        popupY.value = withTiming(-40, { duration: 1150, easing: Easing.out(Easing.quad) });
-        setTimeout(() => setScorePopup(null), 1200);
-
-        // Haptics scale with line count
-        if (lines >= 4) {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        } else if (lines >= 2) {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        } else {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        }
-
-        // Board shake on multi-clear
-        if (lines >= 2) {
-          boardScale.value = withSequence(
-            withTiming(0.98, { duration: 60 }),
-            withSpring(1, { damping: 10, stiffness: 200 }),
+          // Score popup
+          setScorePopup({ points, key: Date.now() });
+          popupOpacity.value = 0;
+          popupY.value = 0;
+          popupOpacity.value = withSequence(
+            withTiming(1, { duration: 150 }),
+            withTiming(1, { duration: 600 }),
+            withTiming(0, { duration: 400 }),
           );
+          popupY.value = withTiming(-40, { duration: 1150, easing: Easing.out(Easing.quad) });
+          setTimeout(() => setScorePopup(null), 1200);
+
+          // Haptics scale with line count
+          if (lines >= 4) {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          } else if (lines >= 2) {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          } else {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }
+
+          // Board shake on multi-clear
+          if (lines >= 2) {
+            boardScale.value = withSequence(
+              withTiming(0.98, { duration: 60 }),
+              withSpring(1, { damping: 10, stiffness: 200 }),
+            );
+          }
+
+          setTimeout(() => setClearedRowsFlash([]), 400);
+        } else {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
         }
 
-        // Clear the flash after animation
-        setTimeout(() => setClearedRowsFlash([]), 400);
-      } else {
-        // Landing haptic (subtle)
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-      }
+        return cleared;
+      });
 
-      return cleared;
-    });
+      // Spawn next piece at the top
+      setPiece(randomPiece());
+    },
+    [boardScale, popupOpacity, popupY],
+  );
 
-    const next = randomPiece();
-    setPiece(next);
-    // Game over check will happen on next render since we set new piece at row 0
-  }, [piece, boardScale]);
-
-  // Check game over after piece changes
+  // Check game over after piece/board changes
   useEffect(() => {
     if (!canPlace(board, piece.matrix, piece.row, piece.col)) {
       setGameOver(true);
-      // Reset board on game over (the session continues — user doesn't lose the craving intervention)
+      // Reset board on game over — the session continues (this IS the intervention)
       setTimeout(() => {
         setBoard(emptyBoard());
         setPiece(randomPiece());
@@ -228,58 +221,73 @@ export function BlockStackGame({
     }
   }, [board, piece]);
 
-  // ----- Movement -----
+  // ----- Movement (reads state from closure — no nested setState) -----
   const move = useCallback(
     (dRow: number, dCol: number) => {
       if (completedRef.current || gameOver) return;
-      setPiece((p) => {
-        const nr = p.row + dRow;
-        const nc = p.col + dCol;
-        if (canPlace(board, p.matrix, nr, nc)) {
-          if (dCol !== 0) {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
-          }
-          return { ...p, row: nr, col: nc };
+      const nr = piece.row + dRow;
+      const nc = piece.col + dCol;
+      if (canPlace(board, piece.matrix, nr, nc)) {
+        if (dCol !== 0) {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
         }
-        if (dRow > 0) lockPiece();
-        return p;
-      });
+        setPiece({ ...piece, row: nr, col: nc });
+      } else if (dRow > 0) {
+        // Can't fall further → lock it and spawn the next piece
+        lockPiece(piece);
+      }
     },
-    [board, lockPiece, gameOver],
+    [board, piece, lockPiece, gameOver],
   );
 
   const rotate = useCallback(() => {
     if (completedRef.current || gameOver) return;
-    setPiece((p) => {
-      const rotated = tryRotate(board, p);
-      if (rotated !== p) {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      }
-      return rotated;
-    });
-  }, [board, gameOver]);
+    const rotated = tryRotate(board, piece);
+    if (rotated !== piece) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      setPiece(rotated);
+    }
+  }, [board, piece, gameOver]);
 
   const hardDrop = useCallback(() => {
     if (completedRef.current || gameOver) return;
-    setPiece((p) => {
-      const dropRow = ghostRow(board, p);
-      if (dropRow > p.row) {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        return { ...p, row: dropRow };
-      }
-      return p;
-    });
-    // lockPiece will be triggered by the gravity tick finding no room to move
-  }, [board, gameOver]);
+    const dropRow = ghostRow(board, piece);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    // Lock immediately at the drop position
+    lockPiece({ ...piece, row: dropRow });
+  }, [board, piece, lockPiece, gameOver]);
 
   // ----- Auto-gravity -----
+  // Keep refs to the latest move fn and progress so the loop below never
+  // needs to be torn down/recreated (which was preventing gravity from firing).
+  const moveRef = useRef(move);
+  const coolProgressRef = useRef(coolProgress);
   useEffect(() => {
-    const interval = getDropInterval(coolProgress);
-    tickRef.current = setInterval(() => move(1, 0), interval);
-    return () => {
-      if (tickRef.current) clearInterval(tickRef.current);
+    moveRef.current = move;
+  }, [move]);
+  useEffect(() => {
+    coolProgressRef.current = coolProgress;
+  }, [coolProgress]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const tick = () => {
+      if (cancelled || completedRef.current) return;
+      moveRef.current(1, 0);
+      tickRef.current = setTimeout(
+        tick,
+        getDropInterval(coolProgressRef.current),
+      ) as unknown as ReturnType<typeof setInterval>;
     };
-  }, [move, coolProgress]);
+    tickRef.current = setTimeout(
+      tick,
+      getDropInterval(coolProgressRef.current),
+    ) as unknown as ReturnType<typeof setInterval>;
+    return () => {
+      cancelled = true;
+      if (tickRef.current) clearTimeout(tickRef.current as unknown as ReturnType<typeof setTimeout>);
+    };
+  }, []);
 
   // ----- Swipe gesture (PanResponder) -----
   const swipeThreshold = 30;
@@ -352,7 +360,7 @@ export function BlockStackGame({
         const w = CELL - BLOCK_GAP * 2;
         const h = CELL - BLOCK_GAP * 2;
 
-        // Ghost piece preview
+        // Ghost piece preview (drop target)
         if (
           cellVal === 0 &&
           ghost.row !== piece.row &&
@@ -366,15 +374,19 @@ export function BlockStackGame({
           if (ghost.matrix[gr]?.[gc]) {
             const colors = pieceColors[ghost.shapeId] || pieceColors[1];
             cells.push(
-              <RoundedRect
+              <View
                 key={`ghost-${r}-${c}`}
-                x={x}
-                y={y}
-                width={w}
-                height={h}
-                r={BLOCK_RADIUS}
-                color={colors.from}
-                opacity={0.15}
+                style={{
+                  position: 'absolute',
+                  left: x,
+                  top: y,
+                  width: w,
+                  height: h,
+                  borderRadius: BLOCK_RADIUS,
+                  borderWidth: 2,
+                  borderColor: colors.from,
+                  opacity: 0.3,
+                }}
               />,
             );
           }
@@ -384,92 +396,70 @@ export function BlockStackGame({
 
         const colors = pieceColors[cellVal] || pieceColors[1];
 
-        if (isFlashing) {
-          // Glow + dissolve effect on cleared rows
-          cells.push(
-            <Group key={`flash-${r}-${c}`}>
-              {/* Bright glow behind */}
-              <RoundedRect
-                x={x - 2}
-                y={y - 2}
-                width={w + 4}
-                height={h + 4}
-                r={BLOCK_RADIUS + 2}
-                color={colors.from}
-                opacity={0.5}
-              />
-              {/* White flash overlay */}
-              <RoundedRect
-                x={x}
-                y={y}
-                width={w}
-                height={h}
-                r={BLOCK_RADIUS}
-                color="white"
-                opacity={0.85}
-              />
-            </Group>,
-          );
-        } else {
-          cells.push(
-            <Group key={`block-${r}-${c}`}>
-              <RoundedRect x={x} y={y} width={w} height={h} r={BLOCK_RADIUS}>
-                <LinearGradient
-                  start={vec(x, y)}
-                  end={vec(x + w, y + h)}
-                  colors={[colors.from, colors.to]}
-                />
-              </RoundedRect>
-              {/* Inner highlight for depth */}
-              <RoundedRect
-                x={x + 1}
-                y={y + 1}
-                width={w - 2}
-                height={h * 0.4}
-                r={BLOCK_RADIUS - 1}
-                color="white"
-                opacity={0.18}
-              />
-            </Group>,
-          );
-        }
+        cells.push(
+          <View
+            key={`block-${r}-${c}`}
+            style={{
+              position: 'absolute',
+              left: x,
+              top: y,
+              width: w,
+              height: h,
+              borderRadius: BLOCK_RADIUS,
+              backgroundColor: isFlashing ? '#ffffff' : colors.from,
+              borderBottomWidth: isFlashing ? 0 : 3,
+              borderBottomColor: colors.to,
+              borderTopWidth: isFlashing ? 0 : 1.5,
+              borderTopColor: 'rgba(255,255,255,0.4)',
+              shadowColor: colors.to,
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: isFlashing ? 0.8 : 0.25,
+              shadowRadius: isFlashing ? 8 : 2,
+            }}
+          />,
+        );
       }
     }
 
     return cells;
   }, [board, piece, ghost, clearedRowsFlash, pieceColors]);
 
-  // ----- Subtle grid lines -----
+  // ----- Subtle grid lines (RN Views) -----
+  const gridColor = theme.scheme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(14,42,54,0.05)';
   const gridLines = useMemo(() => {
     const lines: React.ReactNode[] = [];
     for (let r = 1; r < ROWS; r++) {
       lines.push(
-        <RoundedRect
+        <View
           key={`hline-${r}`}
-          x={0}
-          y={r * CELL}
-          width={BOARD_W}
-          height={0.5}
-          r={0}
-          color={theme.scheme === 'dark' ? 'rgba(255,255,255,0.04)' : 'rgba(14,42,54,0.04)'}
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: r * CELL,
+            width: BOARD_W,
+            height: StyleSheet.hairlineWidth,
+            backgroundColor: gridColor,
+          }}
         />,
       );
     }
     for (let c = 1; c < COLS; c++) {
       lines.push(
-        <RoundedRect
+        <View
           key={`vline-${c}`}
-          x={c * CELL}
-          y={0}
-          width={0.5}
-          height={BOARD_H}
-          r={0}
-          color={theme.scheme === 'dark' ? 'rgba(255,255,255,0.04)' : 'rgba(14,42,54,0.04)'}
+          style={{
+            position: 'absolute',
+            left: c * CELL,
+            top: 0,
+            width: StyleSheet.hairlineWidth,
+            height: BOARD_H,
+            backgroundColor: gridColor,
+          }}
         />,
       );
     }
     return lines;
-  }, [theme.scheme]);
+  }, [gridColor]);
 
   const boardBg = theme.scheme === 'dark'
     ? 'rgba(0,0,0,0.3)'
@@ -484,7 +474,7 @@ export function BlockStackGame({
     : 'rgba(14,42,54,0.08)';
 
   return (
-    <View style={styles.container} {...panResponder.panHandlers}>
+    <View style={styles.container}>
       <CoolingBackground coolProgress={coolProgress} />
 
       {/* Header: close + timer */}
@@ -529,21 +519,20 @@ export function BlockStackGame({
 
       {/* Game board */}
       <Animated.View
+        {...panResponder.panHandlers}
         style={[
           styles.boardWrap,
           boardAnimatedStyle,
           {
+            width: BOARD_W,
+            height: BOARD_H,
             backgroundColor: boardBg,
             borderColor: controlBorder,
           },
         ]}
       >
-        <Canvas style={{ width: BOARD_W, height: BOARD_H }}>
-          <Group>
-            {gridLines}
-            {renderBoard}
-          </Group>
-        </Canvas>
+        {gridLines}
+        {renderBoard}
       </Animated.View>
 
       {/* Score popup */}
@@ -555,47 +544,30 @@ export function BlockStackGame({
         </Animated.View>
       )}
 
-      {/* Controls */}
+      {/* Controls — gesture-first. Swipe the board to move; these are helpers. */}
       <View style={styles.controls}>
-        {/* Rotate */}
-        <Pressable
-          style={[styles.ctrlBtn, styles.ctrlRotate, { backgroundColor: controlBg, borderColor: controlBorder }]}
-          onPress={rotate}
-        >
-          <Text style={[styles.ctrlIcon, { color: theme.text.primary }]}>↻</Text>
-        </Pressable>
-
         <View style={styles.ctrlRow}>
-          {/* Left */}
           <Pressable
-            style={[styles.ctrlBtn, { backgroundColor: controlBg, borderColor: controlBorder }]}
-            onPress={() => move(0, -1)}
+            style={[styles.pillBtn, { backgroundColor: controlBg, borderColor: controlBorder }]}
+            onPress={rotate}
           >
-            <Text style={[styles.ctrlIcon, { color: theme.text.primary }]}>←</Text>
+            <Text style={[styles.pillIcon, { color: theme.text.primary }]}>↻</Text>
+            <Text style={[styles.pillLabel, { color: theme.text.secondary }]}>Rotate</Text>
           </Pressable>
 
-          {/* Down (soft drop) */}
           <Pressable
-            style={[styles.ctrlBtn, styles.ctrlDown, { backgroundColor: controlBg, borderColor: controlBorder }]}
-            onPress={() => move(1, 0)}
-            onLongPress={hardDrop}
+            style={[styles.pillBtn, { backgroundColor: controlBg, borderColor: controlBorder }]}
+            onPress={hardDrop}
           >
-            <Text style={[styles.ctrlIcon, { color: theme.text.primary }]}>↓</Text>
-          </Pressable>
-
-          {/* Right */}
-          <Pressable
-            style={[styles.ctrlBtn, { backgroundColor: controlBg, borderColor: controlBorder }]}
-            onPress={() => move(0, 1)}
-          >
-            <Text style={[styles.ctrlIcon, { color: theme.text.primary }]}>→</Text>
+            <Text style={[styles.pillIcon, { color: theme.text.primary }]}>↓</Text>
+            <Text style={[styles.pillLabel, { color: theme.text.secondary }]}>Drop</Text>
           </Pressable>
         </View>
       </View>
 
       {/* Swipe hint */}
       <Text style={[styles.hint, { color: theme.text.muted }]}>
-        swipe to move · tap board to rotate
+        swipe to move · tap to rotate · swipe down to drop
       </Text>
 
       {/* Timer completion overlay */}
@@ -676,31 +648,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 16,
   },
-  ctrlBtn: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    borderWidth: 0.5,
+  pillBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 28,
+    borderWidth: 0.5,
+    minWidth: 120,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 6,
     elevation: 2,
   },
-  ctrlRotate: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  pillIcon: {
+    fontSize: 22,
+    fontWeight: '700',
   },
-  ctrlDown: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-  },
-  ctrlIcon: {
-    fontSize: 26,
+  pillLabel: {
+    fontSize: 15,
     fontWeight: '600',
   },
   hint: {

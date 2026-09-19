@@ -28,11 +28,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: '#0e141b',
     },
     package: 'com.swell.quit',
+    permissions: ['POST_NOTIFICATIONS', 'VIBRATE'],
+    ...(process.env.GOOGLE_SERVICES_JSON
+      ? { googleServicesFile: process.env.GOOGLE_SERVICES_JSON }
+      : {}),
   },
   plugins: [
     'expo-router',
     'expo-apple-authentication',
     'expo-web-browser',
+    'expo-notifications',
     [
       'expo-av',
       {
@@ -48,5 +53,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     apiUrl:
       process.env.EXPO_PUBLIC_API_URL ??
       'https://paisahipaisahoga-production.up.railway.app',
+    // Required for Expo push tokens. Set EAS_PROJECT_ID (from `eas init`).
+    eas: {
+      projectId: process.env.EAS_PROJECT_ID,
+    },
   },
 });

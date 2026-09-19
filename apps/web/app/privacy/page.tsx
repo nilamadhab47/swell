@@ -60,9 +60,9 @@ export default function PrivacyPage() {
         <h2>Retention</h2>
         <p>
           We keep your account and logs while the account is active. Push tokens stay until you sign out, disable
-          notifications, or delete the account. You can ask us to delete your account and associated data at{' '}
-          <a href="mailto:nilamadhab47@gmail.com">nilamadhab47@gmail.com</a>. We will complete deletion within 30
-          days, except where we must keep a record for legal or security reasons.
+          notifications, or delete the account. You can delete your account in the app (Settings → Delete account),
+          or email <a href="mailto:nilamadhab47@gmail.com">nilamadhab47@gmail.com</a>. We will complete deletion
+          within 30 days, except where we must keep a record for legal or security reasons.
         </p>
         <h2>Your rights</h2>
         <p>

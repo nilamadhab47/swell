@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { AppHeader } from '../components/AppHeader';
 import { ArtEmblem, ART } from '../components/ArtEmblem';
@@ -64,6 +64,7 @@ export function SettingsScreen({
   const latestNote = useLatestNote();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const deleteAccount = useAuthStore((s) => s.deleteAccount);
   const queryClient = useQueryClient();
   const { preference, cycle } = useColorSchemePreference();
   const appearanceLabel =
@@ -194,9 +195,8 @@ export function SettingsScreen({
             </Text>
             <SettingsRow
               title="Craving reminders"
-              subtitle="A quiet nudge when the usual hour hits."
-              value="Soon"
-              muted
+              subtitle="One or two quiet notes a day, if you allow alerts."
+              value="On"
             />
             <SettingsRow
               title="Appearance"
@@ -230,6 +230,51 @@ export function SettingsScreen({
                       replay();
                       queryClient.clear();
                     });
+                  }}
+                />
+                <SettingsRow
+                  title="Delete account"
+                  subtitle="Erase this account, wins, notes, and reminders. Cannot be undone."
+                  value="Delete"
+                  onPress={() => {
+                    Alert.alert(
+                      'Delete your account?',
+                      'This permanently erases your sign-in, wins, notes, and reminder tokens. You can create a new account later, but this one is gone.',
+                      [
+                        { text: 'Keep it', style: 'cancel' },
+                        {
+                          text: 'Delete',
+                          style: 'destructive',
+                          onPress: () => {
+                            Alert.alert(
+                              'Really delete?',
+                              'Last chance. This cannot be undone.',
+                              [
+                                { text: 'Cancel', style: 'cancel' },
+                                {
+                                  text: 'Delete forever',
+                                  style: 'destructive',
+                                  onPress: () => {
+                                    void deleteAccount(config.appId)
+                                      .then(() => {
+                                        replay();
+                                        queryClient.clear();
+                                      })
+                                      .catch((err: unknown) => {
+                                        const message =
+                                          err instanceof Error
+                                            ? err.message
+                                            : 'Could not delete the account. Try again.';
+                                        Alert.alert('Not deleted', message);
+                                      });
+                                  },
+                                },
+                              ],
+                            );
+                          },
+                        },
+                      ],
+                    );
                   }}
                 />
               </>

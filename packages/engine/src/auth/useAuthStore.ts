@@ -4,6 +4,7 @@ import {
   loginAppleIdToken,
   loginEmail,
   logoutRemote,
+  deleteAccountRemote,
   registerEmail,
   requestPhoneOtp,
   resendEmailOtp,
@@ -41,6 +42,7 @@ interface AuthStore {
   verifyOtp: (appId: string, email: string, code: string) => Promise<void>;
   resendOtp: (appId: string, email: string) => Promise<void>;
   logout: (appId: string) => Promise<void>;
+  deleteAccount: (appId: string) => Promise<void>;
 }
 
 function applyInMemory(tokens: AuthTokens) {
@@ -200,6 +202,14 @@ export const useAuthStore = create<AuthStore>((set, get) => {
 
     logout: async (appId) => {
       await logoutRemote(appId);
+      setAuthToken(null);
+      setRefreshToken(null);
+      await clearStoredSession();
+      set({ accessToken: null, user: null });
+    },
+
+    deleteAccount: async (appId) => {
+      await deleteAccountRemote(appId);
       setAuthToken(null);
       setRefreshToken(null);
       await clearStoredSession();

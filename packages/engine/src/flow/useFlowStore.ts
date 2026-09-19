@@ -28,17 +28,20 @@ export const useFlowStore = create<FlowStore>((set) => ({
   lastReflection: null,
   lastCravingId: null,
 
-  // Two games available — route through game_select.
-  startFight: () =>
+  // Randomly pick a game — no selection screen needed.
+  startFight: () => {
+    const games: GameId[] = ['block_stack', 'scribble', 'flappy'];
+    const picked = games[Math.floor(Math.random() * games.length)];
     set({
-      state: 'game_select',
+      state: 'game',
       session: {
         startedAt: Date.now(),
-        selectedGame: null,
+        selectedGame: picked,
         durationSecs: 0,
         beaten: false,
       },
-    }),
+    });
+  },
 
   selectGame: (gameId: GameId) =>
     set((s) => ({

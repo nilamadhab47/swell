@@ -38,10 +38,13 @@ export function useCravingStats() {
   const localWins = useFlowStore((s) => s.cravingsBeatenThisWeek);
 
   const stats = query.data?.cravings;
+  const derived = query.data?.derived;
   const baseline = config.mockSeed?.beatenThisWeek ?? 0;
   const fallbackWeek = baseline + localWins;
   const baselineTotal = config.mockSeed?.totalBeaten ?? 0;
   const fallbackTotal = baselineTotal + localWins;
+  const daysClear = derived?.days_smoke_free ?? config.mockSeed?.daysSmokeFree ?? 0;
+  const moneyReclaimed = derived?.money_reclaimed ?? config.mockSeed?.moneyReclaimed ?? 0;
 
   if (config.useMockApi) {
     return {
@@ -49,6 +52,8 @@ export function useCravingStats() {
       beatenThisWeek: stats?.beaten_this_week ?? fallbackWeek,
       totalBeaten: stats?.total_beaten ?? fallbackTotal,
       totalSessions: stats?.total_sessions ?? fallbackTotal,
+      daysClear,
+      moneyReclaimed,
     };
   }
 
@@ -57,5 +62,7 @@ export function useCravingStats() {
     beatenThisWeek: stats?.beaten_this_week ?? 0,
     totalBeaten: stats?.total_beaten ?? 0,
     totalSessions: stats?.total_sessions ?? 0,
+    daysClear: derived?.days_smoke_free ?? 0,
+    moneyReclaimed: derived?.money_reclaimed ?? 0,
   };
 }

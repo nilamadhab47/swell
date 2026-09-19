@@ -8,6 +8,7 @@ import { useAuthStore } from '../auth/useAuthStore';
 import { useNicheConfig } from '../config/NicheConfigProvider';
 import { getProfile, setApiBaseUrl, setDefaultAppId } from '../data/api';
 import { profileLooksOnboarded, profileToAnswers } from '../data/profileMap';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useFlowStore } from '../flow/useFlowStore';
 import { useOnboardingStore } from '../onboarding/useOnboardingStore';
 import { CravingFlow } from '../flow/CravingFlow';
@@ -42,6 +43,12 @@ export function AppShell() {
   const [tab, setTab] = useState<NavTab>('home');
   const directionRef = useRef(1);
   const animateTabsRef = useRef(false);
+
+  // Register for personalized push once the user is authenticated.
+  usePushNotifications({
+    enabled: !config.useMockApi && Boolean(accessToken),
+    appId: config.appId,
+  });
 
   useEffect(() => {
     setApiBaseUrl(config.apiBaseUrl);

@@ -50,10 +50,9 @@ export default function TermsPage() {
         </p>
         <h2>Termination</h2>
         <p>
-          You can stop using Swell at any time. To delete your account and associated data, email{' '}
-          <a href="mailto:nilamadhab47@gmail.com">nilamadhab47@gmail.com</a>. In-app account deletion is not in the
-          product yet; until it is, email is the way we honor that request within 30 days. We may suspend accounts
-          that abuse the service.
+          You can stop using Swell at any time. Delete your account in the app under Settings → Delete account, or
+          email <a href="mailto:nilamadhab47@gmail.com">nilamadhab47@gmail.com</a>. We complete deletion within 30
+          days. We may suspend accounts that abuse the service.
         </p>
         <h2>Contact</h2>
         <p>

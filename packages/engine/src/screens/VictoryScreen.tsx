@@ -52,7 +52,7 @@ function AnimatedStat({
   delay: number;
 }) {
   const theme = useTheme();
-  const { body, caption } = useTypography();
+  const { caption } = useTypography();
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(16);
   const displayValue = useSharedValue(from);
@@ -102,9 +102,9 @@ export function VictoryScreen() {
   const goToReflect = useFlowStore((s) => s.goToReflect);
   const { data: profile } = useProfile();
   const storedReason = useOnboardingStore((s) => s.answers.reason);
-  const { beatenThisWeek } = useCravingStats();
+  const { beatenThisWeek, daysClear, moneyReclaimed } = useCravingStats();
   const { ads } = useMonetization();
-  const { hero, headline, body, caption } = useTypography();
+  const { headline, body, caption } = useTypography();
 
   const why = victoryWhyLine(storedReason || profile?.quitReason);
   const fromBeaten = useRef(Math.max(0, beatenThisWeek - 1));
@@ -243,10 +243,23 @@ export function VictoryScreen() {
         {/* Stats row */}
         <Animated.View style={[styles.statsRow, restStyle]}>
           <AnimatedStat
+            label="Days clear"
+            from={daysClear}
+            to={daysClear}
+            delay={1000}
+          />
+          <AnimatedStat
             label="This week"
             from={fromBeaten.current}
             to={beatenThisWeek}
-            delay={1000}
+            delay={1150}
+          />
+          <AnimatedStat
+            label="Money back"
+            from={Math.max(0, Math.round(moneyReclaimed))}
+            to={Math.round(moneyReclaimed)}
+            suffix="₹"
+            delay={1300}
           />
         </Animated.View>
 

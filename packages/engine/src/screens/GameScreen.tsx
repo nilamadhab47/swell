@@ -2,6 +2,7 @@ import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { BlockStackGame } from '../games/blockStack/BlockStackGame';
 import { ScribbleGame } from '../games/scribble/ScribbleGame';
+import { FlappyGame } from '../games/flappy/FlappyGame';
 import { useNicheConfig } from '../config/NicheConfigProvider';
 import { postCraving } from '../data/api';
 import { cravingsQueryKey } from '../data/hooks/useCravings';
@@ -50,6 +51,15 @@ export function GameScreen() {
   if (gameId === 'scribble') {
     return (
       <ScribbleGame
+        durationSecs={config.gameDurationSecs}
+        onComplete={handleComplete}
+      />
+    );
+  }
+
+  if (gameId === 'flappy') {
+    return (
+      <FlappyGame
         durationSecs={config.gameDurationSecs}
         onComplete={handleComplete}
       />
