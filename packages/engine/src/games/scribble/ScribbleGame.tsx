@@ -20,6 +20,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  AppState,
   Dimensions,
   PanResponder,
   Pressable,
@@ -147,6 +148,19 @@ export function ScribbleGame({
       }
     }, 200);
     return () => clearInterval(interval);
+  }, [durationSecs, finish]);
+
+  // ----- Resume from background: immediately sync timer -----
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active' && !completedRef.current) {
+        const elapsed = (Date.now() - startRef.current) / 1000;
+        setCoolProgress(Math.min(1, elapsed / durationSecs));
+        setRemainingSecs(Math.max(0, Math.ceil(durationSecs - elapsed)));
+        if (elapsed >= durationSecs) finish();
+      }
+    });
+    return () => sub.remove();
   }, [durationSecs, finish]);
 
   // ----- Drawing (PanResponder) -----

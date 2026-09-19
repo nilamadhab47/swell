@@ -19,6 +19,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  AppState,
   Dimensions,
   PanResponder,
   Pressable,
@@ -96,6 +97,7 @@ export function BlockStackGame({
   const [remainingSecs, setRemainingSecs] = useState(durationSecs);
   const [clearedRowsFlash, setClearedRowsFlash] = useState<number[]>([]);
   const [gameOver, setGameOver] = useState(false);
+  const [scorePopup, setScorePopup] = useState<{ points: number; key: number } | null>(null);
 
   const startRef = useRef(Date.now());
   const completedRef = useRef(false);
@@ -106,6 +108,8 @@ export function BlockStackGame({
   const boardScale = useSharedValue(1);
   const completionOpacity = useSharedValue(0);
   const completionScale = useSharedValue(0.9);
+  const popupOpacity = useSharedValue(0);
+  const popupY = useSharedValue(0);
 
   // ----- Finish handler -----
   const finish = useCallback(() => {
@@ -143,6 +147,19 @@ export function BlockStackGame({
     return () => clearInterval(progressInterval);
   }, [durationSecs, finish]);
 
+  // ----- Resume from background: immediately sync timer -----
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active' && !completedRef.current) {
+        const elapsed = (Date.now() - startRef.current) / 1000;
+        setCoolProgress(Math.min(1, elapsed / durationSecs));
+        setRemainingSecs(Math.max(0, Math.ceil(durationSecs - elapsed)));
+        if (elapsed >= durationSecs) finish();
+      }
+    });
+    return () => sub.remove();
+  }, [durationSecs, finish]);
+
   // ----- Lock piece -----
   const lockPiece = useCallback(() => {
     setBoard((prev) => {
@@ -150,8 +167,21 @@ export function BlockStackGame({
       const { board: cleared, cleared: lines, clearedRows } = clearLines(placed);
 
       if (lines > 0) {
-        setScore((s) => s + lines * 100);
+        const points = lines >= 4 ? 800 : lines >= 3 ? 500 : lines >= 2 ? 300 : 100;
+        setScore((s) => s + points);
         setClearedRowsFlash(clearedRows);
+
+        // Score popup
+        setScorePopup({ points, key: Date.now() });
+        popupOpacity.value = 0;
+        popupY.value = 0;
+        popupOpacity.value = withSequence(
+          withTiming(1, { duration: 150 }),
+          withTiming(1, { duration: 600 }),
+          withTiming(0, { duration: 400 }),
+        );
+        popupY.value = withTiming(-40, { duration: 1150, easing: Easing.out(Easing.quad) });
+        setTimeout(() => setScorePopup(null), 1200);
 
         // Haptics scale with line count
         if (lines >= 4) {
@@ -290,6 +320,12 @@ export function BlockStackGame({
     transform: [{ scale: boardScale.value }],
   }));
 
+  // ----- Score popup animated style -----
+  const popupStyle = useAnimatedStyle(() => ({
+    opacity: popupOpacity.value,
+    transform: [{ translateY: popupY.value }],
+  }));
+
   // ----- Completion overlay -----
   const completionStyle = useAnimatedStyle(() => ({
     opacity: completionOpacity.value,
@@ -349,18 +385,30 @@ export function BlockStackGame({
         const colors = pieceColors[cellVal] || pieceColors[1];
 
         if (isFlashing) {
-          // Flash effect on cleared rows
+          // Glow + dissolve effect on cleared rows
           cells.push(
-            <RoundedRect
-              key={`flash-${r}-${c}`}
-              x={x}
-              y={y}
-              width={w}
-              height={h}
-              r={BLOCK_RADIUS}
-              color="white"
-              opacity={0.9}
-            />,
+            <Group key={`flash-${r}-${c}`}>
+              {/* Bright glow behind */}
+              <RoundedRect
+                x={x - 2}
+                y={y - 2}
+                width={w + 4}
+                height={h + 4}
+                r={BLOCK_RADIUS + 2}
+                color={colors.from}
+                opacity={0.5}
+              />
+              {/* White flash overlay */}
+              <RoundedRect
+                x={x}
+                y={y}
+                width={w}
+                height={h}
+                r={BLOCK_RADIUS}
+                color="white"
+                opacity={0.85}
+              />
+            </Group>,
           );
         } else {
           cells.push(
@@ -497,6 +545,15 @@ export function BlockStackGame({
           </Group>
         </Canvas>
       </Animated.View>
+
+      {/* Score popup */}
+      {scorePopup && (
+        <Animated.View style={[styles.scorePopup, popupStyle]} pointerEvents="none">
+          <Text style={[styles.scorePopupText, { color: theme.state.success, fontFamily: theme.fonts.display }]}>
+            +{scorePopup.points}
+          </Text>
+        </Animated.View>
+      )}
 
       {/* Controls */}
       <View style={styles.controls}>
@@ -663,5 +720,18 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '700',
     textAlign: 'center',
+  },
+  scorePopup: {
+    position: 'absolute',
+    alignSelf: 'center',
+    top: '50%',
+    zIndex: 5,
+  },
+  scorePopupText: {
+    fontSize: 28,
+    fontWeight: '800',
+    textShadowColor: 'rgba(0,0,0,0.1)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 8,
   },
 });
