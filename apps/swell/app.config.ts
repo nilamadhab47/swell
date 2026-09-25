@@ -12,7 +12,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Swell',
   slug: 'swell',
-  version: '1.0.0',
+  version: '1.0.1',
   orientation: 'portrait',
   icon: './assets/icon.png',
   scheme: 'swell',
@@ -36,6 +36,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: '#0e141b',
     },
     package: 'com.swell.quit',
+    versionCode: 2,
     permissions: ['POST_NOTIFICATIONS', 'VIBRATE'],
     ...(googleServicesFile ? { googleServicesFile } : {}),
   },
@@ -44,13 +45,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-apple-authentication',
     'expo-web-browser',
     'expo-notifications',
-    [
-      'expo-av',
-      {
-        microphonePermission:
-          'Swell uses the mic so you can record a short note about what triggered a craving.',
-      },
-    ],
   ],
   experiments: {
     typedRoutes: true,

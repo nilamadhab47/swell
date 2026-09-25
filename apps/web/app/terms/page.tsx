@@ -21,7 +21,7 @@ export default function TermsPage() {
         </p>
         <h2>Your account</h2>
         <p>
-          You must provide accurate sign-in details (phone, email, Google, or Apple). You are responsible for the
+          You must provide accurate sign-in details (phone, email, or Apple on iOS). You are responsible for the
           device that stays signed in. Do not share your one-time codes. Optional push reminders are not required
           to use Swell; you can refuse the permission or later disable notifications on the device.
         </p>

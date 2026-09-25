@@ -24,8 +24,8 @@ export default function PrivacyPage() {
         <h2>What we collect</h2>
         <ul>
           <li>
-            <strong>Account:</strong> phone number and/or email, name if you give it, and sign-in identifiers from
-            Google or Apple.
+            <strong>Account:</strong> phone number and/or email, name if you give it, and (on iOS) Sign in with Apple
+            identifiers if you choose that option.
           </li>
           <li>
             <strong>Quit profile:</strong> habit (cigarettes, vape, or both), why you want to quit, typical daily
@@ -54,8 +54,8 @@ export default function PrivacyPage() {
         <h2>Who we share with</h2>
         <p>
           Processors that help us run Swell: hosting (Railway), database (Neon), SMS one-time codes (Twilio), email
-          one-time codes (SendGrid), push delivery (Expo), optional reminder wording (Anthropic), and Google or Apple
-          if you sign in with them. They only get what they need to perform that job.
+          one-time codes (SendGrid), push delivery (Expo), optional reminder wording (Anthropic), and Apple if you use
+          Sign in with Apple on iOS. They only get what they need to perform that job.
         </p>
         <h2>Retention</h2>
         <p>

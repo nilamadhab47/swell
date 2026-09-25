@@ -11,7 +11,6 @@
   "peerDependencies": {
     "@shopify/react-native-skia": "*",
     "@tanstack/react-query": "*",
-    "expo-av": "*",
     "expo-constants": "*",
     "expo-haptics": "*",
     "expo-linear-gradient": "*",

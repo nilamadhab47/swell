@@ -1,6 +1,6 @@
 {
   "name": "swell",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
@@ -21,7 +21,6 @@
     "@tanstack/react-query": "^5.69.0",
     "expo": "~53.0.0",
     "expo-apple-authentication": "~7.2.4",
-    "expo-av": "~15.1.4",
     "expo-constants": "~17.1.6",
     "expo-font": "~13.3.1",
     "expo-haptics": "~14.1.4",
