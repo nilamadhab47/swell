@@ -12,7 +12,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Swell',
   slug: 'swell',
-  version: '1.0.1',
+  version: '1.0.2',
   orientation: 'portrait',
   icon: './assets/icon.png',
   scheme: 'swell',
@@ -36,7 +36,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: '#0e141b',
     },
     package: 'com.swell.quit',
-    versionCode: 2,
+    versionCode: 3,
     permissions: ['POST_NOTIFICATIONS', 'VIBRATE'],
     ...(googleServicesFile ? { googleServicesFile } : {}),
   },
@@ -45,6 +45,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-apple-authentication',
     'expo-web-browser',
     'expo-notifications',
+    [
+      'expo-build-properties',
+      {
+        android: {
+          compileSdkVersion: 36,
+          targetSdkVersion: 36,
+        },
+      },
+    ],
   ],
   experiments: {
     typedRoutes: true,
