@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 
-import { registerPushToken } from '../data/api';
+import { registerPushToken, unregisterPushToken } from '../data/api';
 
 // Show notifications while the app is foregrounded too.
 Notifications.setNotificationHandler({
@@ -27,6 +27,18 @@ function resolveProjectId(): string | undefined {
   );
 }
 
+async function currentPushToken(): Promise<string | null> {
+  try {
+    const projectId = resolveProjectId();
+    const tokenResponse = await Notifications.getExpoPushTokenAsync(
+      projectId ? { projectId } : undefined,
+    );
+    return tokenResponse.data || null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Registers this device for personalized push notifications.
  *
@@ -34,14 +46,41 @@ function resolveProjectId(): string | undefined {
  * missing, or we're in an environment without remote push (e.g. Expo Go on
  * some platforms / iOS Simulator), it silently no-ops without crashing.
  *
- * Call once the user is authenticated.
+ * Call once the user is authenticated. `ready` must stay false until the
+ * reminder preference has hydrated so a cold start does not unregister.
  */
-export function usePushNotifications(params: { enabled: boolean; appId: string }) {
-  const { enabled, appId } = params;
+export function usePushNotifications(params: {
+  enabled: boolean;
+  ready: boolean;
+  appId: string;
+}) {
+  const { enabled, ready, appId } = params;
   const doneRef = useRef(false);
+  const tokenRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!enabled || doneRef.current) return;
+    if (!ready) {
+      const known = tokenRef.current;
+      if (known) {
+        tokenRef.current = null;
+        doneRef.current = false;
+        void unregisterPushToken(appId, known).catch(() => undefined);
+      }
+      return;
+    }
+
+    if (!enabled) {
+      doneRef.current = false;
+      const known = tokenRef.current;
+      tokenRef.current = null;
+      void (async () => {
+        const token = known ?? (await currentPushToken());
+        if (!token) return;
+        await unregisterPushToken(appId, token).catch(() => undefined);
+      })();
+      return;
+    }
+    if (doneRef.current) return;
     doneRef.current = true;
 
     void (async () => {
@@ -76,6 +115,7 @@ export function usePushNotifications(params: { enabled: boolean; appId: string }
           doneRef.current = false;
           return;
         }
+        tokenRef.current = token;
 
         const timezone =
           Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
@@ -90,5 +130,5 @@ export function usePushNotifications(params: { enabled: boolean; appId: string }
         doneRef.current = false;
       }
     })();
-  }, [enabled, appId]);
+  }, [ready, enabled, appId]);
 }

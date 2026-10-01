@@ -75,6 +75,8 @@ export { useCravings, useLatestNote, cravingsQueryKey } from './data/hooks/useCr
 export { useProfile, profileQueryKey } from './data/hooks/useProfile';
 export { usePushNotifications } from './hooks/usePushNotifications';
 export { formatMoney, formatTimeSaved, formatDays, pickDailyQuote, moneyInRealTerms, buildProgressInsight } from './data/format';
+export { homeGreeting } from './data/greeting';
+export { useReminderPreference } from './hooks/useReminderPreference';
 export type {
   ApiResponse,
   CravingPayload,

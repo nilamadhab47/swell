@@ -8,9 +8,12 @@ import { GlowingButton } from '../components/GlowingButton';
 import { OceanBackground } from '../components/OceanBackground';
 import { ScorePlaque } from '../components/ScorePlaque';
 import { useNicheConfig } from '../config/NicheConfigProvider';
+import { useAuthStore } from '../auth/useAuthStore';
 import { pickDailyQuote } from '../data/format';
+import { homeGreeting } from '../data/greeting';
 import { useCravingStats, useDashboard } from '../data/hooks/useDashboard';
 import { useProfile } from '../data/hooks/useProfile';
+import { resolveFirstName } from '../data/profileMap';
 import type { HealthTimelineItem } from '../data/types';
 import { useFlowStore } from '../flow/useFlowStore';
 import { FadeBlock } from '../motion/FadeBlock';
@@ -30,7 +33,8 @@ export function HomeScreen({ onTabPress, hideNav }: HomeScreenProps) {
   const startFight = useFlowStore((s) => s.startFight);
   const storedName = useOnboardingStore((s) => s.answers.name);
   const { data: profile } = useProfile();
-  const firstName = (storedName || profile?.name || '').trim().split(/\s+/)[0] || '';
+  const authName = useAuthStore((s) => s.user?.name);
+  const firstName = resolveFirstName(storedName, profile, authName);
   const { beatenThisWeek, totalBeaten, isLoading, isFetching, isError, refetch } =
     useCravingStats();
   const { data: dashboard } = useDashboard();
@@ -42,13 +46,14 @@ export function HomeScreen({ onTabPress, hideNav }: HomeScreenProps) {
   const currency = derived?.money_currency ?? 'INR';
   const waves = totalBeaten || beatenThisWeek;
 
-  const currentMilestone = dashboard?.health_timeline.find(
+  const currentMilestone = dashboard?.health_timeline?.find(
     (item: HealthTimelineItem) => item.status === 'current'
   );
   const insightText =
     currentMilestone?.description ?? pickDailyQuote(config.motivationQuotes);
 
   const showLoading = isLoading && !dashboard;
+  const greeting = homeGreeting(firstName);
 
   const handleRide = () => {
     if (launching) return;
@@ -57,6 +62,10 @@ export function HomeScreen({ onTabPress, hideNav }: HomeScreenProps) {
       startFight();
     }, 380);
   };
+
+  const ridePrompt = firstName
+    ? `${firstName}, tap here and ride it out.`
+    : 'Tap here and ride it out.';
 
   return (
     <View
@@ -70,10 +79,45 @@ export function HomeScreen({ onTabPress, hideNav }: HomeScreenProps) {
 
       <View style={styles.content}>
         {showLoading ? (
-          <ActivityIndicator color={theme.accent.coral} size="large" />
+          <View style={styles.hero}>
+            <Text
+              style={[
+                caption,
+                { color: theme.text.muted, marginBottom: 16, textAlign: 'center' },
+              ]}
+            >
+              {greeting}
+            </Text>
+            <ActivityIndicator color={theme.accent.coral} size="large" />
+            <Text
+              style={[
+                body,
+                {
+                  color: theme.text.secondary,
+                  textAlign: 'center',
+                  marginTop: 16,
+                },
+              ]}
+            >
+              Loading your tide…
+            </Text>
+            <GlowingButton
+              label={config.primaryActionLabel}
+              onPress={handleRide}
+              style={{ marginTop: 28, width: '100%', maxWidth: 280 }}
+            />
+          </View>
         ) : isError && !dashboard ? (
           <View style={styles.hero}>
-            <ArtEmblem source={ART.empty} size={180} rounded />
+            <Text
+              style={[
+                caption,
+                { color: theme.text.muted, marginBottom: 12, textAlign: 'center' },
+              ]}
+            >
+              {greeting}
+            </Text>
+            <ArtEmblem source={ART.empty} size={148} rounded />
             <Text
               style={[
                 body,
@@ -81,23 +125,42 @@ export function HomeScreen({ onTabPress, hideNav }: HomeScreenProps) {
                   color: theme.text.primary,
                   textAlign: 'center',
                   lineHeight: 22,
-                  marginTop: 20,
+                  marginTop: 16,
                 },
               ]}
             >
-              Couldn&apos;t reach your stats. The craving loop still works.
+              Couldn&apos;t load your stats. You can still ride this craving out.
             </Text>
             <GlowingButton
               label="Try again"
+              variant="glass"
               onPress={() => {
                 void refetch();
               }}
-              style={{ marginTop: 24, width: '100%', maxWidth: 280 }}
+              style={{ marginTop: 20, width: '100%', maxWidth: 280 }}
+            />
+            <GlowingButton
+              label={config.primaryActionLabel}
+              onPress={handleRide}
+              style={{ marginTop: 12, width: '100%', maxWidth: 280 }}
             />
           </View>
         ) : (
           <>
             <FadeBlock delay={40} style={styles.hero}>
+              <Text
+                style={[
+                  caption,
+                  {
+                    color: theme.text.secondary,
+                    marginBottom: 10,
+                    textAlign: 'center',
+                    letterSpacing: 0.4,
+                  },
+                ]}
+              >
+                {greeting}
+              </Text>
               <ScorePlaque
                 days={daysFree}
                 waves={waves}
@@ -134,7 +197,7 @@ export function HomeScreen({ onTabPress, hideNav }: HomeScreenProps) {
                   },
                 ]}
               >
-                Feeling the pull?{firstName ? ` ${firstName}, tap` : ' Tap'} here and ride it out.
+                Feeling the pull? {ridePrompt}
               </Text>
             </FadeBlock>
 

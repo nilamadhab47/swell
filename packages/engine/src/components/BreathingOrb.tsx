@@ -110,12 +110,13 @@ export function BreathingOrb({
           }}
           style={styles.hit}
         >
-          <Image
-            source={BREATHE_ART}
-            style={styles.art}
-            resizeMode="contain"
-            pointerEvents="none"
-          />
+          <View pointerEvents="none" style={styles.art}>
+            <Image
+              source={BREATHE_ART}
+              style={{ width: ORB, height: ORB }}
+              resizeMode="contain"
+            />
+          </View>
           <View pointerEvents="none" style={styles.labelWrap}>
             <Text
               style={[

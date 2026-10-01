@@ -24,6 +24,7 @@ interface OnboardingStore {
   completed: boolean;
   answers: OnboardingAnswers;
   complete: (answers: OnboardingAnswers) => void;
+  patchAnswers: (partial: Partial<OnboardingAnswers>) => void;
   replay: () => void;
 }
 
@@ -32,6 +33,11 @@ export const useOnboardingStore = create<OnboardingStore>((set) => ({
   answers: EMPTY_ANSWERS,
 
   complete: (answers) => set({ completed: true, answers }),
+
+  patchAnswers: (partial) =>
+    set((state) => ({
+      answers: { ...state.answers, ...partial },
+    })),
 
   replay: () => set({ completed: false, answers: EMPTY_ANSWERS }),
 }));

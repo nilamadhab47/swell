@@ -9,6 +9,7 @@ import { useNicheConfig } from '../config/NicheConfigProvider';
 import { getProfile, setApiBaseUrl, setDefaultAppId } from '../data/api';
 import { profileLooksOnboarded, profileToAnswers } from '../data/profileMap';
 import { usePushNotifications } from '../hooks/usePushNotifications';
+import { useReminderPreference } from '../hooks/useReminderPreference';
 import { useFlowStore } from '../flow/useFlowStore';
 import { useOnboardingStore } from '../onboarding/useOnboardingStore';
 import { CravingFlow } from '../flow/CravingFlow';
@@ -40,13 +41,17 @@ export function AppShell() {
   const hydrated = useAuthStore((s) => s.hydrated);
   const accessToken = useAuthStore((s) => s.accessToken);
   const hydrate = useAuthStore((s) => s.hydrate);
+  const remindersOn = useReminderPreference((s) => s.enabled);
+  const remindersHydrated = useReminderPreference((s) => s.hydrated);
+  const hydrateReminders = useReminderPreference((s) => s.hydrate);
   const [tab, setTab] = useState<NavTab>('home');
   const directionRef = useRef(1);
   const animateTabsRef = useRef(false);
 
   // Register for personalized push once the user is authenticated.
   usePushNotifications({
-    enabled: !config.useMockApi && Boolean(accessToken),
+    ready: !config.useMockApi && Boolean(accessToken) && remindersHydrated,
+    enabled: remindersOn,
     appId: config.appId,
   });
 
@@ -54,7 +59,8 @@ export function AppShell() {
     setApiBaseUrl(config.apiBaseUrl);
     setDefaultAppId(config.appId);
     void hydrate();
-  }, [config.apiBaseUrl, config.appId, hydrate]);
+    void hydrateReminders();
+  }, [config.apiBaseUrl, config.appId, hydrate, hydrateReminders]);
 
   useEffect(() => {
     if (config.useMockApi || !accessToken || onboardingDone) return;

@@ -110,6 +110,7 @@ export interface Profile {
 
 export interface ProfileUpdate {
   name?: string;
+  age?: number;
   quitReason?: string;
   daysSmokeFree?: number;
   timeSavedMinutes?: number;

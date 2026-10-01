@@ -1,17 +1,34 @@
-import React from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppHeader } from '../components/AppHeader';
 import { ArtEmblem, ART } from '../components/ArtEmblem';
 import { BottomNav, type NavTab } from '../components/BottomNav';
 import { DevScreenMenu, type DevScreenTarget } from '../components/DevScreenMenu';
 import { GlassCard } from '../components/GlassCard';
+import { GlowingButton } from '../components/GlowingButton';
 import { OceanBackground } from '../components/OceanBackground';
 import { SettingsRow } from '../components/SettingsRow';
 import { useAuthStore } from '../auth/useAuthStore';
 import { useNicheConfig } from '../config/NicheConfigProvider';
-import { useFlowStore } from '../flow/useFlowStore';
+import { updateProfile } from '../data/api';
 import { useLatestNote } from '../data/hooks/useCravings';
+import { profileQueryKey, useProfile } from '../data/hooks/useProfile';
+import { nameAgePatch, parseAgeInput, resolveDisplayName } from '../data/profileMap';
+import { useFlowStore } from '../flow/useFlowStore';
+import { useReminderPreference } from '../hooks/useReminderPreference';
 import { FadeBlock } from '../motion/FadeBlock';
 import { useOnboardingStore } from '../onboarding/useOnboardingStore';
 import {
@@ -49,6 +66,17 @@ function formatNoteTime(savedAt: number): string {
   });
 }
 
+function extrasAge(profile: { extras?: Record<string, unknown> } | undefined): number | undefined {
+  const raw = profile?.extras?.age;
+  const n = typeof raw === 'number' ? raw : Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
+function displayAge(value: string | number | undefined | null): string {
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) && n > 0 ? String(Math.round(n)) : 'Not set';
+}
+
 export function SettingsScreen({
   onTabPress,
   onDevJump,
@@ -57,8 +85,10 @@ export function SettingsScreen({
 }: SettingsScreenProps) {
   const theme = useTheme();
   const config = useNicheConfig();
-  const { headline, body, label } = useTypography();
+  const { headline, body, title, label, caption } = useTypography();
+  const insets = useSafeAreaInsets();
   const answers = useOnboardingStore((s) => s.answers);
+  const patchAnswers = useOnboardingStore((s) => s.patchAnswers);
   const replay = useOnboardingStore((s) => s.replay);
   const lastReflection = useFlowStore((s) => s.lastReflection);
   const latestNote = useLatestNote();
@@ -66,6 +96,9 @@ export function SettingsScreen({
   const logout = useAuthStore((s) => s.logout);
   const deleteAccount = useAuthStore((s) => s.deleteAccount);
   const queryClient = useQueryClient();
+  const { data: profile } = useProfile();
+  const remindersOn = useReminderPreference((s) => s.enabled);
+  const setRemindersOn = useReminderPreference((s) => s.setEnabled);
   const { preference, cycle } = useColorSchemePreference();
   const appearanceLabel =
     preference === 'system' ? 'System' : preference === 'dark' ? 'Dark' : 'Light';
@@ -74,7 +107,89 @@ export function SettingsScreen({
   const cost = answers.cost_per_pack.trim();
   const reason = answers.reason.trim();
   const habit = parseHabit(answers.habit);
-  const userName = (answers.name || user?.name || '').trim();
+  const userName = resolveDisplayName(answers.name, profile, user?.name);
+  const ageLabel = displayAge(answers.age || profile?.age || extrasAge(profile));
+
+  const [editOpen, setEditOpen] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editAge, setEditAge] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const openEdit = useCallback(() => {
+    setEditName(userName);
+    const ageSource = answers.age || profile?.age || extrasAge(profile);
+    const parsed = Number(ageSource);
+    setEditAge(Number.isFinite(parsed) && parsed > 0 ? String(Math.round(parsed)) : '');
+    setEditOpen(true);
+  }, [answers.age, profile, userName]);
+
+  const saveProfile = useCallback(async () => {
+    const nextName = editName.trim();
+    const parsed = parseAgeInput(editAge);
+    if (!nextName) {
+      Alert.alert('Name needed', 'Add a first name so we can greet you.');
+      return;
+    }
+    if (!parsed.ok) {
+      Alert.alert('Age looks off', 'Leave it blank, or enter a number between 13 and 120.');
+      return;
+    }
+    const nextAge = parsed.age;
+    const previous = { name: answers.name, age: answers.age };
+    setSaving(true);
+    patchAnswers({
+      name: nextName,
+      age: nextAge != null ? String(nextAge) : '',
+    });
+    try {
+      if (!config.useMockApi) {
+        await updateProfile(
+          config.appId,
+          nameAgePatch(profile, nextName, nextAge, answers),
+        );
+        await queryClient.invalidateQueries({
+          queryKey: profileQueryKey(config.appId),
+        });
+      }
+      setEditOpen(false);
+    } catch {
+      patchAnswers(previous);
+      Alert.alert(
+        'Couldn’t save',
+        'Check your connection and try again. Your name was not changed.',
+      );
+    } finally {
+      setSaving(false);
+    }
+  }, [
+    answers,
+    config.appId,
+    config.useMockApi,
+    editAge,
+    editName,
+    patchAnswers,
+    profile,
+    queryClient,
+  ]);
+
+  const toggleReminders = useCallback(() => {
+    const next = !remindersOn;
+    Alert.alert(
+      next ? 'Turn reminders on?' : 'Turn reminders off?',
+      next
+        ? 'We’ll nudge you when a craving window is likely.'
+        : 'You won’t get craving nudges until you turn this back on.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: next ? 'Turn on' : 'Turn off',
+          onPress: () => {
+            void setRemindersOn(next);
+          },
+        },
+      ],
+    );
+  }, [remindersOn, setRemindersOn]);
 
   return (
     <View style={[styles.container, { backgroundColor: hideNav ? 'transparent' : theme.surface.canvas }]}>
@@ -103,8 +218,19 @@ export function SettingsScreen({
         <FadeBlock delay={100}>
           <GlassCard style={styles.card}>
             <Text style={[label, { color: theme.text.secondary }]}>
-              YOUR WHY
+              YOU
             </Text>
+            <SettingsRow
+              title="Name"
+              subtitle="Used for your greeting. Not shown to anyone else."
+              value={userName || 'Not set'}
+              onPress={openEdit}
+            />
+            <SettingsRow
+              title="Age"
+              value={ageLabel}
+              onPress={openEdit}
+            />
             <SettingsRow
               title="The reason"
               subtitle={reason || "You haven't named it yet — that's okay."}
@@ -197,7 +323,8 @@ export function SettingsScreen({
             <SettingsRow
               title="Craving reminders"
               subtitle="One or two quiet notes a day, if you allow alerts."
-              value="On"
+              value={remindersOn ? 'On' : 'Off'}
+              onPress={toggleReminders}
             />
             <SettingsRow
               title="Appearance"
@@ -318,6 +445,96 @@ export function SettingsScreen({
       {hideNav || !onTabPress ? null : (
         <BottomNav active="settings" onTabPress={onTabPress} />
       )}
+
+      <Modal
+        visible={editOpen}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setEditOpen(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.modalWrap}
+        >
+          <Pressable style={styles.modalScrim} onPress={() => setEditOpen(false)} />
+          <View
+            style={[
+              styles.modalCard,
+              {
+                backgroundColor: theme.surface.raised,
+                borderColor: theme.border.subtle,
+                paddingBottom: insets.bottom + 20,
+              },
+            ]}
+          >
+            <Text style={[title, { color: theme.text.primary, marginBottom: 6 }]}>
+              Name & age
+            </Text>
+            <Text
+              style={[body, { color: theme.text.secondary, marginBottom: 18 }]}
+            >
+              Used for your greeting. Not shown to anyone else.
+            </Text>
+            <Text style={[caption, { color: theme.text.muted, marginBottom: 6 }]}>
+              First name
+            </Text>
+            <TextInput
+              value={editName}
+              onChangeText={setEditName}
+              autoCapitalize="words"
+              placeholder="Your name"
+              placeholderTextColor={theme.text.muted}
+              style={[
+                body,
+                styles.input,
+                {
+                  color: theme.text.primary,
+                  borderColor: theme.border.subtle,
+                  backgroundColor: theme.surface.canvas,
+                },
+              ]}
+            />
+            <Text
+              style={[
+                caption,
+                { color: theme.text.muted, marginBottom: 6, marginTop: 14 },
+              ]}
+            >
+              Age
+            </Text>
+            <TextInput
+              value={editAge}
+              onChangeText={setEditAge}
+              keyboardType="number-pad"
+              placeholder="Optional"
+              placeholderTextColor={theme.text.muted}
+              style={[
+                body,
+                styles.input,
+                {
+                  color: theme.text.primary,
+                  borderColor: theme.border.subtle,
+                  backgroundColor: theme.surface.canvas,
+                },
+              ]}
+            />
+            <GlowingButton
+              label={saving ? 'Saving…' : 'Save'}
+              onPress={() => {
+                void saveProfile();
+              }}
+              disabled={saving}
+              style={{ marginTop: 22 }}
+            />
+            <Pressable
+              onPress={() => setEditOpen(false)}
+              style={{ marginTop: 14, alignItems: 'center' }}
+            >
+              <Text style={[caption, { color: theme.text.muted }]}>Cancel</Text>
+            </Pressable>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </View>
   );
 }
@@ -342,5 +559,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 8,
+  },
+  modalWrap: { flex: 1, justifyContent: 'flex-end' },
+  modalScrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(8, 18, 32, 0.55)',
+  },
+  modalCard: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderWidth: 1,
+    paddingHorizontal: 22,
+    paddingTop: 22,
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
   },
 });
