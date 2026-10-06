@@ -27,6 +27,7 @@ import { updateProfile } from '../data/api';
 import { useLatestNote } from '../data/hooks/useCravings';
 import { profileQueryKey, useProfile } from '../data/hooks/useProfile';
 import { nameAgePatch, parseAgeInput, resolveDisplayName } from '../data/profileMap';
+import { openLegalPage, openPlayListing, PRIVACY_URL, TERMS_URL } from '../legal/links';
 import { useFlowStore } from '../flow/useFlowStore';
 import { useReminderPreference } from '../hooks/useReminderPreference';
 import { FadeBlock } from '../motion/FadeBlock';
@@ -416,6 +417,30 @@ export function SettingsScreen({
               ABOUT
             </Text>
             <SettingsRow title={config.brand.name} subtitle={config.brand.tagline} />
+            <SettingsRow
+              title="Privacy"
+              subtitle="How we use your account and craving data."
+              value="Open"
+              onPress={() => {
+                void openLegalPage(PRIVACY_URL);
+              }}
+            />
+            <SettingsRow
+              title="Terms"
+              subtitle="What using Swell means."
+              value="Open"
+              onPress={() => {
+                void openLegalPage(TERMS_URL);
+              }}
+            />
+            <SettingsRow
+              title="Rate Swell"
+              subtitle="Opens the Play Store listing. No pop-ups after a win."
+              value="Play"
+              onPress={() => {
+                void openPlayListing();
+              }}
+            />
             {config.useMockApi ? (
               <SettingsRow
                 title="Demo numbers"

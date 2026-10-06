@@ -6,7 +6,7 @@
   "types": "./src/index.ts",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test src/data/greeting.test.ts src/data/profileMap.test.ts src/hooks/useReminderPreference.test.ts",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test src/data/greeting.test.ts src/data/profileMap.test.ts src/hooks/useReminderPreference.test.ts src/legal/links.test.ts",
     "lint": "echo 'no lint configured'"
   },
   "peerDependencies": {

@@ -12,6 +12,7 @@ import { GlowingButton } from '../components/GlowingButton';
 import { OceanBackground } from '../components/OceanBackground';
 import { useNicheConfig } from '../config/NicheConfigProvider';
 import { ApiError } from '../data/types';
+import { openLegalPage, PRIVACY_URL, TERMS_URL } from '../legal/links';
 import { formatLocalPhone, isSimpleMobile } from '../auth/phone';
 import { useAuthStore } from '../auth/useAuthStore';
 import { useTheme } from '../theme/useTheme';
@@ -41,6 +42,7 @@ export function AuthScreen() {
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
@@ -202,14 +204,31 @@ export function AuthScreen() {
                 textContentType="emailAddress"
                 style={inputStyle}
               />
-              <TextInput
-                value={password}
-                onChangeText={setPassword}
-                placeholder={mode === 'register' ? 'Password (8+ characters)' : 'Password'}
-                placeholderTextColor={theme.text.secondary}
-                secureTextEntry
-                style={inputStyle}
-              />
+              <View>
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder={mode === 'register' ? 'Password (8+ characters)' : 'Password'}
+                  placeholderTextColor={theme.text.secondary}
+                  secureTextEntry={!showPassword}
+                  textContentType="password"
+                  autoComplete="password"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  style={[...inputStyle, styles.passwordInput]}
+                />
+                <Pressable
+                  onPress={() => setShowPassword((on) => !on)}
+                  hitSlop={8}
+                  style={styles.passwordToggle}
+                  accessibilityRole="button"
+                  accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  <Text style={[label, { color: theme.accent.aqua }]}>
+                    {showPassword ? 'Hide' : 'Show'}
+                  </Text>
+                </Pressable>
+              </View>
             </>
           ) : null}
 
@@ -378,6 +397,25 @@ export function AuthScreen() {
               </>
             ) : null}
           </View>
+          <View style={styles.legalRow}>
+            <Pressable
+              onPress={() => {
+                void openLegalPage(PRIVACY_URL);
+              }}
+              hitSlop={8}
+            >
+              <Text style={[label, { color: theme.text.muted }]}>Privacy</Text>
+            </Pressable>
+            <Text style={[label, { color: theme.text.muted }]}>·</Text>
+            <Pressable
+              onPress={() => {
+                void openLegalPage(TERMS_URL);
+              }}
+              hitSlop={8}
+            >
+              <Text style={[label, { color: theme.text.muted }]}>Terms</Text>
+            </Pressable>
+          </View>
         </View>
       </KeyboardAvoidingView>
     </View>
@@ -404,6 +442,23 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     fontSize: 18,
   },
+  passwordInput: {
+    paddingRight: 72,
+  },
+  passwordToggle: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
+    bottom: 0,
+    justifyContent: 'center',
+  },
+  legalRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
+    paddingBottom: 28,
+  },
   code: {
     fontSize: 28,
     letterSpacing: 8,
@@ -411,7 +466,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     marginTop: 'auto',
-    paddingBottom: 48,
+    paddingBottom: 16,
     gap: 12,
     alignItems: 'center',
   },

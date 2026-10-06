@@ -4,6 +4,7 @@ declare module 'expo-web-browser' {
     url: string,
     redirectUrl?: string
   ): Promise<{ type: 'success' | 'cancel' | 'dismiss' | 'locked'; url?: string }>;
+  export function openBrowserAsync(url: string): Promise<{ type: string }>;
 }
 
 declare module 'expo-apple-authentication' {
