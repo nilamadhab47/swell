@@ -1,64 +1,62 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { AppHeader } from '../components/AppHeader';
 import { GlassCard } from '../components/GlassCard';
+import { GlowingButton } from '../components/GlowingButton';
 import { OceanBackground } from '../components/OceanBackground';
+import {
+  loadLastGame,
+  pickSurprise,
+  PLAYABLE_GAMES,
+  saveLastGame,
+  type PlayableGame,
+} from '../flow/games';
 import { useFlowStore } from '../flow/useFlowStore';
-import type { GameId } from '../flow/types';
 import { FadeBlock } from '../motion/FadeBlock';
 import { useTypography } from '../theme/useTypography';
 import { useTheme } from '../theme/useTheme';
 
-const GAMES: {
-  id: GameId;
-  name: string;
-  line: string;
-  icon: string;
-  available: boolean;
-}[] = [
-  {
-    id: 'block_stack',
+const GAME_COPY: Record<
+  PlayableGame,
+  { name: string; line: string; icon: string }
+> = {
+  block_stack: {
     name: 'Block Stack',
     line: 'Hands busy. Mind quieter.',
     icon: '▣',
-    available: true,
   },
-  {
-    id: 'scribble',
+  scribble: {
     name: 'Scribble',
     line: 'Draw anything. Fill the time.',
     icon: '✎',
-    available: true,
   },
-  {
-    id: 'flappy',
+  flappy: {
     name: 'Float',
     line: 'Tap to drift. You can’t lose.',
     icon: '🪶',
-    available: true,
   },
-  {
-    id: 'color_match',
-    name: 'Color Match',
-    line: 'Coming when the next wave needs it.',
-    icon: '◉',
-    available: false,
-  },
-  {
-    id: 'tap_rhythm',
-    name: 'Tap Rhythm',
-    line: 'A beat to wait it out.',
-    icon: '♪',
-    available: false,
-  },
-];
+};
 
 export function GameSelectScreen() {
   const theme = useTheme();
   const { headline, body, title, label } = useTypography();
   const selectGame = useFlowStore((s) => s.selectGame);
   const reset = useFlowStore((s) => s.reset);
+  const [lastGame, setLastGame] = useState<PlayableGame | null>(null);
+
+  useEffect(() => {
+    void loadLastGame().then(setLastGame);
+  }, []);
+
+  const start = useCallback(
+    (gameId: PlayableGame) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      void saveLastGame(gameId);
+      selectGame(gameId);
+    },
+    [selectGame],
+  );
 
   return (
     <View style={[styles.container, { backgroundColor: theme.surface.canvas }]}>
@@ -85,52 +83,67 @@ export function GameSelectScreen() {
           </Text>
         </FadeBlock>
 
+        <FadeBlock delay={80} style={styles.surprise}>
+          <GlowingButton
+            label="Surprise me"
+            onPress={() => start(pickSurprise(lastGame))}
+            style={{ width: '100%', maxWidth: 320 }}
+          />
+        </FadeBlock>
+
+        <Text
+          style={[
+            label,
+            {
+              color: theme.text.muted,
+              textAlign: 'center',
+              marginTop: 8,
+              marginBottom: 4,
+            },
+          ]}
+        >
+          Or pick
+        </Text>
+
         <View style={styles.grid}>
-          {GAMES.map((game, index) => (
-            <FadeBlock key={game.id} delay={80 + index * 60}>
-              <Pressable
-                disabled={!game.available}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  selectGame(game.id);
-                }}
-                style={({ pressed }) => [
-                  { opacity: game.available ? (pressed ? 0.8 : 1) : 0.4 },
-                ]}
-              >
-                <GlassCard style={styles.tile}>
-                  <Text
-                    style={{
-                      fontSize: 28,
-                      color: game.available ? theme.accent.aqua : theme.text.secondary,
-                    }}
-                  >
-                    {game.icon}
-                  </Text>
-                  <Text
-                    style={[
-                      title,
-                      { color: theme.text.primary, marginTop: 12 },
-                    ]}
-                  >
-                    {game.name}
-                  </Text>
-                  <Text
-                    style={[
-                      label,
-                      {
-                        color: theme.text.secondary,
-                        marginTop: 6,
-                        textAlign: 'center',
-                      },
-                    ]}
-                  >
-                    {game.available ? game.line : 'Soon'}
-                  </Text>
-                </GlassCard>
-              </Pressable>
-            </FadeBlock>
-          ))}
+          {PLAYABLE_GAMES.map((id, index) => {
+            const game = GAME_COPY[id];
+            const isLast = lastGame === id;
+            return (
+              <FadeBlock key={id} delay={120 + index * 60}>
+                <Pressable
+                  onPress={() => start(id)}
+                  style={({ pressed }) => [{ opacity: pressed ? 0.8 : 1 }]}
+                >
+                  <GlassCard style={styles.tile}>
+                    <Text style={{ fontSize: 28, color: theme.accent.aqua }}>
+                      {game.icon}
+                    </Text>
+                    <Text
+                      style={[
+                        title,
+                        { color: theme.text.primary, marginTop: 12 },
+                      ]}
+                    >
+                      {game.name}
+                    </Text>
+                    <Text
+                      style={[
+                        label,
+                        {
+                          color: theme.text.secondary,
+                          marginTop: 6,
+                          textAlign: 'center',
+                        },
+                      ]}
+                    >
+                      {isLast ? 'Last ride' : game.line}
+                    </Text>
+                  </GlassCard>
+                </Pressable>
+              </FadeBlock>
+            );
+          })}
         </View>
       </View>
     </View>
@@ -144,12 +157,16 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 24,
+    paddingTop: 16,
     paddingBottom: 48,
     justifyContent: 'center',
   },
+  surprise: {
+    marginTop: 28,
+    alignItems: 'center',
+  },
   grid: {
-    marginTop: 40,
+    marginTop: 16,
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
