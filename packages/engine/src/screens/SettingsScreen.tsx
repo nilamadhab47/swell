@@ -333,83 +333,82 @@ export function SettingsScreen({
               value={appearanceLabel}
               onPress={cycle}
             />
-            {config.useMockApi ? (
-              <SettingsRow
-                title="Sign-in"
-                subtitle="Demo mode — API calls are off."
-                value="Off"
-                muted
-              />
-            ) : (
-              <>
-                <SettingsRow
-                  title="Signed in"
-                  subtitle={
-                    user?.phone ??
-                    user?.email ??
-                    'Your session is on this phone.'
-                  }
-                />
-                <SettingsRow
-                  title="Sign out"
-                  subtitle="Wins stay on the server. This phone forgets the session."
-                  value="Leave"
-                  onPress={() => {
-                    void logout(config.appId).then(() => {
-                      replay();
-                      queryClient.clear();
-                    });
-                  }}
-                />
-                <SettingsRow
-                  title="Delete account"
-                  subtitle="Erase this account, wins, notes, and reminders. Cannot be undone."
-                  value="Delete"
-                  onPress={() => {
-                    Alert.alert(
-                      'Delete your account?',
-                      'This permanently erases your sign-in, wins, notes, and reminder tokens. You can create a new account later, but this one is gone.',
-                      [
-                        { text: 'Keep it', style: 'cancel' },
-                        {
-                          text: 'Delete',
-                          style: 'destructive',
-                          onPress: () => {
-                            Alert.alert(
-                              'Really delete?',
-                              'Last chance. This cannot be undone.',
-                              [
-                                { text: 'Cancel', style: 'cancel' },
-                                {
-                                  text: 'Delete forever',
-                                  style: 'destructive',
-                                  onPress: () => {
-                                    void deleteAccount(config.appId)
-                                      .then(() => {
-                                        replay();
-                                        queryClient.clear();
-                                      })
-                                      .catch((err: unknown) => {
-                                        const message =
-                                          err instanceof Error
-                                            ? err.message
-                                            : 'Could not delete the account. Try again.';
-                                        Alert.alert('Not deleted', message);
-                                      });
-                                  },
-                                },
-                              ],
-                            );
-                          },
-                        },
-                      ],
-                    );
-                  }}
-                />
-              </>
-            )}
           </GlassCard>
         </FadeBlock>
+
+        {config.useMockApi ? null : (
+          <FadeBlock delay={250}>
+            <GlassCard style={styles.card}>
+              <Text style={[label, { color: theme.text.secondary }]}>
+                ACCOUNT
+              </Text>
+              <SettingsRow
+                title="Signed in"
+                subtitle={
+                  user?.phone ??
+                  user?.email ??
+                  'Your session is on this phone.'
+                }
+              />
+              <SettingsRow
+                title="Sign out"
+                subtitle="Wins stay on the server. This phone forgets the session."
+                value="Leave"
+                onPress={() => {
+                  void logout(config.appId).then(() => {
+                    replay();
+                    queryClient.clear();
+                  });
+                }}
+              />
+              <SettingsRow
+                title="Delete account"
+                subtitle="Erase this account, wins, notes, and reminders. Cannot be undone."
+                value="Delete"
+                onPress={() => {
+                  Alert.alert(
+                    'Delete your account?',
+                    'This permanently erases your sign-in, wins, notes, and reminder tokens. You can create a new account later, but this one is gone.',
+                    [
+                      { text: 'Keep it', style: 'cancel' },
+                      {
+                        text: 'Delete',
+                        style: 'destructive',
+                        onPress: () => {
+                          Alert.alert(
+                            'Really delete?',
+                            'Last chance. This cannot be undone.',
+                            [
+                              { text: 'Cancel', style: 'cancel' },
+                              {
+                                text: 'Delete forever',
+                                style: 'destructive',
+                                onPress: () => {
+                                  void deleteAccount(config.appId)
+                                    .then(() => {
+                                      replay();
+                                      queryClient.clear();
+                                    })
+                                    .catch((err: unknown) => {
+                                      const message =
+                                        err instanceof Error
+                                          ? err.message
+                                          : 'Could not delete the account. Try again.';
+                                      Alert.alert('Not deleted', message);
+                                    });
+                                },
+                              },
+                            ],
+                          );
+                        },
+                      },
+                    ],
+                  );
+                }}
+              />
+            </GlassCard>
+          </FadeBlock>
+        )}
 
         <FadeBlock delay={280}>
           <GlassCard style={styles.card}>
@@ -435,26 +434,12 @@ export function SettingsScreen({
             />
             <SettingsRow
               title="Rate Swell"
-              subtitle="Opens the Play Store listing. No pop-ups after a win."
+              subtitle="Opens the Play Store listing."
               value="Play"
               onPress={() => {
                 void openPlayListing();
               }}
             />
-            {config.useMockApi ? (
-              <SettingsRow
-                title="Demo numbers"
-                subtitle="These wins are local mock data while we build."
-                value="On"
-                muted
-              />
-            ) : (
-              <SettingsRow
-                title="Live API"
-                subtitle="Talking to the Swell backend. Stats come from your account."
-                value="On"
-              />
-            )}
           </GlassCard>
         </FadeBlock>
 
