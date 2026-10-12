@@ -6,7 +6,7 @@ settings:
 
 overrides:
   '@babel/runtime': ^7.26.10
-  '@shopify/react-native-skia': 2.0.0-next.4
+  '@shopify/react-native-skia': 2.0.6
 
 importers:
 
@@ -74,8 +74,8 @@ importers:
         specifier: ~5.0.4
         version: 5.0.4(react-native@0.79.2(@babel/core@7.29.7)(@types/react@19.0.14)(react@19.0.0))
       '@shopify/react-native-skia':
-        specifier: 2.0.0-next.4
-        version: 2.0.0-next.4(react-native-reanimated@3.17.5(@babel/core@7.29.7)(react-native@0.79.2(@babel/core@7.29.7)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.29.7)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+        specifier: 2.0.6
+        version: 2.0.6(react-native-reanimated@3.17.5(@babel/core@7.29.7)(react-native@0.79.2(@babel/core@7.29.7)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.29.7)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       '@swell/engine':
         specifier: workspace:*
         version: link:../../packages/engine
@@ -214,8 +214,8 @@ importers:
   packages/engine:
     dependencies:
       '@shopify/react-native-skia':
-        specifier: 2.0.0-next.4
-        version: 2.0.0-next.4(react-native-reanimated@3.17.5(@babel/core@7.29.7)(react-native@0.79.2(@babel/core@7.29.7)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.29.7)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+        specifier: 2.0.6
+        version: 2.0.6(react-native-reanimated@3.17.5(@babel/core@7.29.7)(react-native@0.79.2(@babel/core@7.29.7)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.29.7)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       '@tanstack/react-query':
         specifier: '*'
         version: 5.102.8(react@19.0.0)
@@ -2026,8 +2026,8 @@ packages:
     resolution: {integrity: sha512-xBaJish5OeGmniDj9cW5PRa/PtmuVU3ziqrbr5xJj901ZDN4TosrVaNZpEiLZAxdfnhAe7uQ7QFWfjPe9d9K2Q==}
     engines: {node: '>= 10'}
 
-  '@shopify/react-native-skia@2.0.0-next.4':
-    resolution: {integrity: sha512-NzvdgryRz6tkKMHgCChCKa3wXfN9TZhlV0/LrfIU/wKLC1uKgGXkoZgNz7Is0wwdhtao1JJJJ81fqHCGHgzk9g==}
+  '@shopify/react-native-skia@2.0.6':
+    resolution: {integrity: sha512-hi590YVtDLHRO6Wr+nCVwr5ydIMRxoWnTpIJZBCRJ+LIitbwhVKHw5NWfxi178iBYxk8H020I+/XoiDVY3yPIg==}
     hasBin: true
     peerDependencies:
       react: '>=19.0'
@@ -6793,7 +6793,7 @@ snapshots:
       '@resvg/resvg-js-win32-ia32-msvc': 2.6.2
       '@resvg/resvg-js-win32-x64-msvc': 2.6.2
 
-  '@shopify/react-native-skia@2.0.0-next.4(react-native-reanimated@3.17.5(@babel/core@7.29.7)(react-native@0.79.2(@babel/core@7.29.7)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.29.7)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
+  '@shopify/react-native-skia@2.0.6(react-native-reanimated@3.17.5(@babel/core@7.29.7)(react-native@0.79.2(@babel/core@7.29.7)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.2(@babel/core@7.29.7)(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)':
     dependencies:
       canvaskit-wasm: 0.40.0
       react: 19.0.0

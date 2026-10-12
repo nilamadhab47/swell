@@ -31,8 +31,20 @@ export function SiteFooter() {
           <ul className="mt-4 space-y-2 text-sm text-mist">
             <li><Link href="/privacy" className="hover:text-ink">Privacy</Link></li>
             <li><Link href="/terms" className="hover:text-ink">Terms</Link></li>
-            <li><a href={site.appStoreUrl} className="hover:text-ink">App Store</a></li>
-            <li><a href={site.playStoreUrl} className="hover:text-ink">Google Play</a></li>
+            <li>
+              <a href={site.playStoreUrl} target="_blank" rel="noopener noreferrer" className="hover:text-ink">
+                Google Play
+              </a>
+            </li>
+            {site.appStoreUrl ? (
+              <li>
+                <a href={site.appStoreUrl} target="_blank" rel="noopener noreferrer" className="hover:text-ink">
+                  App Store
+                </a>
+              </li>
+            ) : (
+              <li className="text-hush">iOS coming soon</li>
+            )}
           </ul>
         </div>
       </div>

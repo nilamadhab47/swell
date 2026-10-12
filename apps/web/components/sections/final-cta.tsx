@@ -1,5 +1,5 @@
 import { site } from '@/lib/constants';
-import { buttonVariants } from '@/components/ui/button';
+import { StoreButtons } from './store-buttons';
 
 export function FinalCta() {
   return (
@@ -9,18 +9,13 @@ export function FinalCta() {
         <div className="pointer-events-none absolute -bottom-16 -left-16 h-56 w-56 rounded-full bg-coral/15 blur-3xl" aria-hidden />
         <h2 className="relative text-4xl font-bold tracking-tight md:text-5xl">Get through the next one.</h2>
         <p className="relative mx-auto mt-4 max-w-lg text-lg text-mist">
-          Swell is coming to iOS and Android. Leave the craving with something better to do.
+          Swell is on Google Play. Open it when the craving hits, play for three minutes, and let the wave pass.
         </p>
-        <div className="relative mt-8 flex flex-wrap justify-center gap-3">
-          <a href={site.appStoreUrl} className={buttonVariants({ size: 'lg' })}>
-            App Store
-          </a>
-          <a href={site.playStoreUrl} className={buttonVariants({ variant: 'ghost', size: 'lg' })}>
-            Google Play
-          </a>
+        <div className="relative mt-8">
+          <StoreButtons />
         </div>
         <p className="relative mt-6 text-sm text-hush">
-          Store links are placeholders until the first public build. Email {site.email} for early access.
+          {site.appStoreUrl ? 'Also on the App Store.' : 'Coming to iOS next.'} Questions? Email {site.email}.
         </p>
       </div>
     </section>

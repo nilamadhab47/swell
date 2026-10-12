@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
+import { site } from '@/lib/constants';
 import { buttonVariants } from '@/components/ui/button';
 import { PhoneMockup } from './phone-mockup';
 import { OceanBackdrop } from './ocean-backdrop';
@@ -43,14 +44,21 @@ export function Hero() {
             break, and keep score of the cravings that didn’t get you.
           </p>
           <div className="hero-cta mt-8 flex flex-wrap gap-3">
-            <Link href="#download" className={buttonVariants({ size: 'lg' })}>
-              Get Swell
-            </Link>
+            <a
+              href={site.playStoreUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonVariants({ size: 'lg' })}
+            >
+              Get it on Google Play
+            </a>
             <Link href="#demo" className={buttonVariants({ variant: 'ghost', size: 'lg' })}>
               See how it works
             </Link>
           </div>
-          <p className="hero-trust mt-5 text-sm text-hush">Free to start · iOS &amp; Android · Not a medical treatment</p>
+          <p className="hero-trust mt-5 text-sm text-hush">
+            Free to start · On Google Play · iOS next · Not a medical treatment
+          </p>
         </div>
         <div className="hero-phone">
           <PhoneMockup priority />

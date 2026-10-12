@@ -6,7 +6,7 @@ const routes = ['/', '/how-it-works', '/quit-smoking', '/faq', '/privacy', '/ter
 export default function sitemap(): MetadataRoute.Sitemap {
   return routes.map((path) => ({
     url: `${site.url}${path === '/' ? '' : path}`,
-    lastModified: new Date('2026-09-19'),
+    lastModified: new Date('2026-10-12'),
     changeFrequency: path === '/' ? 'weekly' : 'monthly',
     priority: path === '/' ? 1 : 0.7,
   }));

@@ -18,7 +18,7 @@
   "pnpm": {
     "overrides": {
       "@babel/runtime": "^7.26.10",
-      "@shopify/react-native-skia": "2.0.0-next.4"
+      "@shopify/react-native-skia": "2.0.6"
     }
   }
 }

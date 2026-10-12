@@ -1,6 +1,6 @@
 {
   "name": "swell",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
@@ -16,7 +16,7 @@
     "@expo-google-fonts/quicksand": "^0.2.3",
     "@expo-google-fonts/rubik": "^0.2.3",
     "@expo/metro-runtime": "~5.0.4",
-    "@shopify/react-native-skia": "2.0.0-next.4",
+    "@shopify/react-native-skia": "2.0.6",
     "@swell/engine": "workspace:*",
     "@tanstack/react-query": "^5.69.0",
     "expo": "~53.0.0",
@@ -46,5 +46,10 @@
     "@resvg/resvg-js": "^2.6.2",
     "@types/react": "~19.0.10",
     "typescript": "^5.8.2"
+  },
+  "expo": {
+    "install": {
+      "exclude": ["@shopify/react-native-skia"]
+    }
   }
 }

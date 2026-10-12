@@ -1,9 +1,16 @@
 const DEFAULT_SITE_URL = 'https://useswell.site';
+const DEFAULT_PLAY_STORE_URL =
+  'https://play.google.com/store/apps/details?id=com.swell.quit';
 
-/** Treat unset or blank env values as missing (Vercel often sets empty strings). */
+/** Treat unset, blank, or hash placeholders as missing (Vercel often sets empty strings). */
 function envOrDefault(value: string | undefined, fallback: string): string {
   const trimmed = value?.trim();
-  return trimmed || fallback;
+  if (!trimmed || trimmed.startsWith('#')) return fallback;
+  return trimmed;
+}
+
+function optionalUrl(value: string | undefined): string {
+  return envOrDefault(value, '');
 }
 
 export const site = {
@@ -14,8 +21,8 @@ export const site = {
     'Swell helps you quit smoking or vaping by riding out the next craving. A calm 3-minute game. No lectures. Just a score of the ones that didn’t get you.',
   url: envOrDefault(process.env.NEXT_PUBLIC_SITE_URL, DEFAULT_SITE_URL),
   email: 'nilamadhab47@gmail.com',
-  appStoreUrl: envOrDefault(process.env.NEXT_PUBLIC_APP_STORE_URL, '#download'),
-  playStoreUrl: envOrDefault(process.env.NEXT_PUBLIC_PLAY_STORE_URL, '#download'),
+  appStoreUrl: optionalUrl(process.env.NEXT_PUBLIC_APP_STORE_URL),
+  playStoreUrl: envOrDefault(process.env.NEXT_PUBLIC_PLAY_STORE_URL, DEFAULT_PLAY_STORE_URL),
 };
 
 export const nav = [
@@ -52,6 +59,6 @@ export const faqs = [
   },
   {
     q: 'What platforms does Swell support?',
-    a: 'iOS and Android. App Store and Play Store links will live here as soon as the first build is submitted.',
+    a: 'Android is on Google Play now. iOS is next — the App Store link will land here when that build ships.',
   },
 ];

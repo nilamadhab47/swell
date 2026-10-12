@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Menu, X } from 'lucide-react';
-import { nav } from '@/lib/constants';
+import { nav, site } from '@/lib/constants';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -37,9 +37,14 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="hidden md:block">
-          <Link href="#download" className={buttonVariants({ size: 'sm' })}>
+          <a
+            href={site.playStoreUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonVariants({ size: 'sm' })}
+          >
             Get Swell
-          </Link>
+          </a>
         </div>
         <button
           type="button"
@@ -64,9 +69,15 @@ export function SiteHeader() {
                 {item.label}
               </Link>
             ))}
-            <Link href="#download" className={cn(buttonVariants(), 'mt-3')} onClick={() => setOpen(false)}>
+            <a
+              href={site.playStoreUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(buttonVariants(), 'mt-3')}
+              onClick={() => setOpen(false)}
+            >
               Get Swell
-            </Link>
+            </a>
           </nav>
         </div>
       ) : null}
