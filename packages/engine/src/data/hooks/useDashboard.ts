@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNicheConfig } from '../../config/NicheConfigProvider';
 import { useAuthStore } from '../../auth/useAuthStore';
 import { useFlowStore } from '../../flow/useFlowStore';
+import { useOnboardingStore } from '../../onboarding/useOnboardingStore';
 import { getDashboard } from '../api';
 import { buildMockDashboard } from '../mockDashboard';
 import type { Dashboard } from '../types';
@@ -12,6 +13,7 @@ export function useDashboard() {
   const config = useNicheConfig();
   const localBeaten = useFlowStore((s) => s.cravingsBeatenThisWeek);
   const accessToken = useAuthStore((s) => s.accessToken);
+  const answers = useOnboardingStore((s) => s.answers);
   const live = !config.useMockApi;
 
   return useQuery({
@@ -19,13 +21,13 @@ export function useDashboard() {
     enabled: config.useMockApi || Boolean(accessToken),
     queryFn: async (): Promise<Dashboard> => {
       if (config.useMockApi) {
-        return buildMockDashboard(config, localBeaten);
+        return buildMockDashboard(config, localBeaten, answers);
       }
       return getDashboard(config.appId);
     },
     placeholderData: live
       ? undefined
-      : () => buildMockDashboard(config, localBeaten),
+      : () => buildMockDashboard(config, localBeaten, answers),
     staleTime: config.useMockApi ? Infinity : 30_000,
     retry: live ? 1 : 0,
   });

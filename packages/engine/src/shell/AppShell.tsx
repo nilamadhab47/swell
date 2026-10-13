@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { AppHeader } from '../components/AppHeader';
 import { BottomNav, type NavTab } from '../components/BottomNav';
@@ -6,7 +6,9 @@ import type { DevScreenTarget } from '../components/DevScreenMenu';
 import { OceanBackground } from '../components/OceanBackground';
 import { useAuthStore } from '../auth/useAuthStore';
 import { useNicheConfig } from '../config/NicheConfigProvider';
+import { useQueryClient } from '@tanstack/react-query';
 import { getProfile, setApiBaseUrl, setDefaultAppId } from '../data/api';
+import { dashboardQueryKey } from '../data/hooks/useDashboard';
 import { profileLooksOnboarded, profileToAnswers } from '../data/profileMap';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useReminderPreference } from '../hooks/useReminderPreference';
@@ -24,6 +26,9 @@ import { useTheme } from '../theme/useTheme';
 
 const TAB_ORDER: NavTab[] = ['home', 'progress', 'settings'];
 
+/** Demo recording: reset once per JS session so Home never skips the name screen. */
+let demoOnboardingReset = false;
+
 function isNavTab(target: DevScreenTarget): target is NavTab {
   return TAB_ORDER.includes(target as NavTab);
 }
@@ -35,6 +40,9 @@ export function AppShell() {
   const flowState = useFlowStore((s) => s.state);
   const devJumpTo = useFlowStore((s) => s.devJumpTo);
   const reset = useFlowStore((s) => s.reset);
+  const setCravingsBeatenThisWeek = useFlowStore(
+    (s) => s.setCravingsBeatenThisWeek,
+  );
   const onboardingDone = useOnboardingStore((s) => s.completed);
   const completeOnboarding = useOnboardingStore((s) => s.complete);
   const replayOnboarding = useOnboardingStore((s) => s.replay);
@@ -44,6 +52,7 @@ export function AppShell() {
   const remindersOn = useReminderPreference((s) => s.enabled);
   const remindersHydrated = useReminderPreference((s) => s.hydrated);
   const hydrateReminders = useReminderPreference((s) => s.hydrate);
+  const queryClient = useQueryClient();
   const [tab, setTab] = useState<NavTab>('home');
   const directionRef = useRef(1);
   const animateTabsRef = useRef(false);
@@ -61,6 +70,22 @@ export function AppShell() {
     void hydrate();
     void hydrateReminders();
   }, [config.apiBaseUrl, config.appId, hydrate, hydrateReminders]);
+
+  useLayoutEffect(() => {
+    if (!config.useMockApi || demoOnboardingReset) return;
+    demoOnboardingReset = true;
+    replayOnboarding();
+    reset();
+    setCravingsBeatenThisWeek(0);
+    queryClient.removeQueries({ queryKey: dashboardQueryKey(config.appId) });
+  }, [
+    config.appId,
+    config.useMockApi,
+    queryClient,
+    replayOnboarding,
+    reset,
+    setCravingsBeatenThisWeek,
+  ]);
 
   useEffect(() => {
     if (config.useMockApi || !accessToken || onboardingDone) return;

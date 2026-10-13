@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { AppHeader } from '../components/AppHeader';
-import { ArtEmblem, ART } from '../components/ArtEmblem';
 import { BreathingOrb } from '../components/BreathingOrb';
 import { BottomNav, type NavTab } from '../components/BottomNav';
 import { GlowingButton } from '../components/GlowingButton';
@@ -34,8 +33,10 @@ export function HomeScreen({ onTabPress, hideNav }: HomeScreenProps) {
   const storedName = useOnboardingStore((s) => s.answers.name);
   const { data: profile } = useProfile();
   const authName = useAuthStore((s) => s.user?.name);
-  const firstName = resolveFirstName(storedName, profile, authName);
-  const { beatenThisWeek, totalBeaten, isLoading, isFetching, isError, refetch } =
+  const firstName = config.useMockApi
+    ? resolveFirstName(storedName)
+    : resolveFirstName(storedName, profile, authName);
+  const { beatenThisWeek, totalBeaten, isLoading, isError } =
     useCravingStats();
   const { data: dashboard } = useDashboard();
   const [launching, setLaunching] = useState(false);
@@ -52,7 +53,11 @@ export function HomeScreen({ onTabPress, hideNav }: HomeScreenProps) {
   const insightText =
     currentMilestone?.description ?? pickDailyQuote(config.motivationQuotes);
 
-  const showLoading = isLoading && !dashboard;
+  const showLoading = isLoading && !dashboard && !isError;
+  const rideCaption =
+    config.gameDurationSecs >= 60
+      ? `${Math.round(config.gameDurationSecs / 60)} min`
+      : `${config.gameDurationSecs}s`;
   const greeting = homeGreeting(firstName);
 
   const handleRide = () => {
@@ -107,44 +112,6 @@ export function HomeScreen({ onTabPress, hideNav }: HomeScreenProps) {
               style={{ marginTop: 28, width: '100%', maxWidth: 280 }}
             />
           </View>
-        ) : isError && !dashboard ? (
-          <View style={styles.hero}>
-            <Text
-              style={[
-                caption,
-                { color: theme.text.muted, marginBottom: 12, textAlign: 'center' },
-              ]}
-            >
-              {greeting}
-            </Text>
-            <ArtEmblem source={ART.empty} size={148} rounded />
-            <Text
-              style={[
-                body,
-                {
-                  color: theme.text.primary,
-                  textAlign: 'center',
-                  lineHeight: 22,
-                  marginTop: 16,
-                },
-              ]}
-            >
-              Couldn&apos;t load your stats. You can still ride this craving out.
-            </Text>
-            <GlowingButton
-              label="Try again"
-              variant="glass"
-              onPress={() => {
-                void refetch();
-              }}
-              style={{ marginTop: 20, width: '100%', maxWidth: 280 }}
-            />
-            <GlowingButton
-              label={config.primaryActionLabel}
-              onPress={handleRide}
-              style={{ marginTop: 12, width: '100%', maxWidth: 280 }}
-            />
-          </View>
         ) : (
           <>
             <FadeBlock delay={40} style={styles.hero}>
@@ -167,22 +134,12 @@ export function HomeScreen({ onTabPress, hideNav }: HomeScreenProps) {
                 money={moneyReclaimed}
                 currency={currency}
               />
-              {isFetching && !isLoading ? (
-                <Text
-                  style={[
-                    caption,
-                    { color: theme.text.muted, marginTop: 10 },
-                  ]}
-                >
-                  Catching up…
-                </Text>
-              ) : null}
             </FadeBlock>
 
             <FadeBlock delay={140} style={styles.cta}>
               <BreathingOrb
                 label={config.primaryActionLabel}
-                caption="3 min"
+                caption={rideCaption}
                 onPress={handleRide}
                 launching={launching}
               />

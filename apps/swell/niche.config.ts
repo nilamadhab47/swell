@@ -1,5 +1,8 @@
 import type { NicheConfig } from '@swell/engine';
 
+/** Local recording / Expo Go only. Never set this in EAS production builds. */
+const demo = process.env.EXPO_PUBLIC_DEMO === '1';
+
 /** Subtle dark — neutral surfaces, one coral accent, emotion lives in the game */
 export const nicheConfig: NicheConfig = {
   appId: 'swell',
@@ -109,17 +112,17 @@ Focus on patterns: time of day, situations, emotions.`,
     ads: false,
     purchases: false,
   },
-  useMockApi: false,
+  useMockApi: demo,
   mockSeed: {
-    daysSmokeFree: 4,
-    moneyReclaimed: 520,
-    beatenThisWeek: 3,
-    totalBeaten: 12,
+    daysSmokeFree: 0,
+    moneyReclaimed: 0,
+    beatenThisWeek: 0,
+    totalBeaten: 0,
     communityBeatenToday: 847,
-    longestStreakDays: 12,
+    longestStreakDays: 0,
   },
   apiBaseUrl:
     process.env.EXPO_PUBLIC_API_URL ??
     'https://paisahipaisahoga-production.up.railway.app',
-  gameDurationSecs: 180,
+  gameDurationSecs: demo ? 20 : 180,
 };

@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import { LogBox } from 'react-native';
 import { SystemBars } from 'react-native-edge-to-edge';
 import { useFonts } from 'expo-font';
 import {
@@ -14,6 +15,10 @@ import { NicheConfigProvider, ThemeProvider, useTheme } from '@swell/engine';
 import { nicheConfig } from '../niche.config';
 
 const queryClient = new QueryClient();
+
+if (process.env.EXPO_PUBLIC_DEMO === '1') {
+  LogBox.ignoreAllLogs(true);
+}
 
 // ThemeProvider owns light/dark; SystemBars follow the resolved scheme
 // without the deprecated Window.setStatusBarColor APIs.

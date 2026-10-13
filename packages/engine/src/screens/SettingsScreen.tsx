@@ -443,7 +443,7 @@ export function SettingsScreen({
           </GlassCard>
         </FadeBlock>
 
-        {__DEV__ && onDevJump && onDevReset ? (
+        {__DEV__ && !config.useMockApi && onDevJump && onDevReset ? (
           <FadeBlock delay={320}>
             <GlassCard style={styles.card}>
               <DevScreenMenu onJump={onDevJump} onReset={onDevReset} />

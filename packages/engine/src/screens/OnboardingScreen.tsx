@@ -286,7 +286,12 @@ export function OnboardingScreen() {
 
   const finish = async () => {
     complete(answers);
-    if (config.useMockApi) return;
+    if (config.useMockApi) {
+      await queryClient.invalidateQueries({
+        queryKey: dashboardQueryKey(config.appId),
+      });
+      return;
+    }
     try {
       await updateProfile(config.appId, answersToProfile(answers));
       await queryClient.invalidateQueries({
