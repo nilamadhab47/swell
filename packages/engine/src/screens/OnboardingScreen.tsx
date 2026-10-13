@@ -39,6 +39,7 @@ import {
   useOnboardingStore,
   type OnboardingAnswers,
 } from '../onboarding/useOnboardingStore';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/useTheme';
 import { useTypography } from '../theme/useTypography';
 
@@ -168,6 +169,7 @@ export function OnboardingScreen() {
   const config = useNicheConfig();
   const { mega, display, headline, body, bodyLg, label, caption } =
     useTypography();
+  const insets = useSafeAreaInsets();
   const complete = useOnboardingStore((s) => s.complete);
   const queryClient = useQueryClient();
 
@@ -329,7 +331,7 @@ export function OnboardingScreen() {
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View style={styles.topBar}>
+        <View style={[styles.topBar, { paddingTop: insets.top + 12 }]}>
           {step !== 'welcome' ? (
             <Pressable onPress={goBack} hitSlop={12} style={styles.backBtn}>
               <Text style={{ color: theme.text.secondary, fontSize: 22 }}>
@@ -419,7 +421,13 @@ export function OnboardingScreen() {
                 </Animated.Text>
               </View>
 
-              <Animated.View entering={staggerIn(620)} style={styles.welcomeFooter}>
+              <Animated.View
+                entering={staggerIn(620)}
+                style={[
+                  styles.welcomeFooter,
+                  { paddingBottom: Math.max(insets.bottom, 16) + 16 },
+                ]}
+              >
                 <Text
                   style={[
                     caption,
@@ -680,7 +688,12 @@ export function OnboardingScreen() {
                 </>
               )}
 
-              <View style={styles.footer}>
+              <View
+                style={[
+                  styles.footer,
+                  { paddingBottom: Math.max(insets.bottom, 16) + 16 },
+                ]}
+              >
                 <GlowingButton
                   label="Continue"
                   disabled={!canContinue}
@@ -785,7 +798,12 @@ export function OnboardingScreen() {
                 ))}
               </View>
 
-              <View style={styles.doneFooter}>
+              <View
+                style={[
+                  styles.doneFooter,
+                  { paddingBottom: Math.max(insets.bottom, 16) + 16 },
+                ]}
+              >
                 {teachIndex >= TEACH_SLIDES.length - 1 ? (
                   <GlowingButton label="I'm ready" onPress={finish} />
                 ) : (
@@ -833,7 +851,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 56,
     paddingBottom: 8,
   },
   backBtn: {
@@ -865,7 +882,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   welcomeFooter: {
-    paddingBottom: 48,
+    paddingBottom: 24,
     alignItems: 'center',
   },
   input: {
@@ -908,7 +925,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     marginTop: 'auto',
-    paddingBottom: 48,
     gap: 16,
     alignItems: 'center',
   },
@@ -954,7 +970,6 @@ const styles = StyleSheet.create({
   },
   doneFooter: {
     paddingHorizontal: 24,
-    paddingBottom: 48,
     paddingTop: 24,
     alignItems: 'center',
   },

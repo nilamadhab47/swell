@@ -16,7 +16,8 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Share, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -33,6 +34,7 @@ import { useCravingStats } from '../data/hooks/useDashboard';
 import { useProfile } from '../data/hooks/useProfile';
 import { useFlowStore } from '../flow/useFlowStore';
 import { useOnboardingStore } from '../onboarding/useOnboardingStore';
+import { shareWinMessage } from '../data/shareWin';
 import { victoryWhyLine } from '../onboarding/victoryWhy';
 import { maybeShowPostVictoryAd, useMonetization } from '../monetization';
 import { useTypography } from '../theme/useTypography';
@@ -106,6 +108,7 @@ export function VictoryScreen() {
   const { beatenThisWeek, daysClear, moneyReclaimed } = useCravingStats();
   const { ads } = useMonetization();
   const { headline, body, caption } = useTypography();
+  const insets = useSafeAreaInsets();
 
   const firstName = (storedName || profile?.name || '').trim().split(/\s+/)[0] || '';
   const why = victoryWhyLine(storedReason || profile?.quitReason);
@@ -174,7 +177,12 @@ export function VictoryScreen() {
         style={[styles.glowBurst, glowStyle, { backgroundColor: theme.accent.aqua }]}
       />
 
-      <View style={styles.content}>
+      <View
+        style={[
+          styles.content,
+          { paddingTop: insets.top + 12, paddingBottom: Math.max(insets.bottom, 24) + 24 },
+        ]}
+      >
         {/* Hero message */}
         <Animated.View style={[styles.heroWrap, heroStyle]}>
           <Text
@@ -273,6 +281,17 @@ export function VictoryScreen() {
             variant="glass"
             style={styles.actionBtn}
           />
+          <GlowingButton
+            label="Share this win"
+            onPress={() => {
+              void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              void Share.share({
+                message: shareWinMessage({ beatenThisWeek, daysClear }),
+              }).catch(() => undefined);
+            }}
+            variant="glass"
+            style={styles.actionBtn}
+          />
           <Pressable
             onPress={() => {
               void maybeShowPostVictoryAd(ads).then(reset);
@@ -297,7 +316,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
-    paddingBottom: 48,
   },
   glowBurst: {
     position: 'absolute',

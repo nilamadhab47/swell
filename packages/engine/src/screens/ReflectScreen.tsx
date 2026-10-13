@@ -17,6 +17,7 @@ import { patchCraving } from '../data/api';
 import { cravingsQueryKey } from '../data/hooks/useCravings';
 import { useFlowStore } from '../flow/useFlowStore';
 import { maybeShowPostVictoryAd, useMonetization } from '../monetization';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/useTheme';
 import { useTypography } from '../theme/useTypography';
 
@@ -24,6 +25,7 @@ export function ReflectScreen() {
   const theme = useTheme();
   const config = useNicheConfig();
   const { headline, body, label } = useTypography();
+  const insets = useSafeAreaInsets();
   const goToVictory = useFlowStore((s) => s.goToVictory);
   const saveReflection = useFlowStore((s) => s.saveReflection);
   const lastCravingId = useFlowStore((s) => s.lastCravingId);
@@ -107,7 +109,7 @@ export function ReflectScreen() {
             ]}
           />
 
-          <View style={styles.footer}>
+          <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 24) + 16 }]}>
             <GlowingButton
               label="Keep this one"
               onPress={handleSave}
@@ -156,7 +158,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     marginTop: 'auto',
-    paddingBottom: 48,
     alignItems: 'center',
     gap: 12,
   },

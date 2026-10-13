@@ -41,6 +41,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 
 import { CoolingBackground } from '../../components/CoolingBackground';
@@ -125,6 +126,7 @@ export function ScribbleGame({
   userName,
 }: ScribbleGameProps) {
   const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const palette = useMemo(() => getPalette(theme.scheme), [theme.scheme]);
 
   // ----- State -----
@@ -263,7 +265,7 @@ export function ScribbleGame({
       <CoolingBackground coolProgress={coolProgress} />
 
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <Pressable
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -469,7 +471,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 56,
     paddingBottom: 8,
     zIndex: 2,
   },

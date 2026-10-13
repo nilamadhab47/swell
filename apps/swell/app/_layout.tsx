@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
+import { SystemBars } from 'react-native-edge-to-edge';
 import { useFonts } from 'expo-font';
 import {
   Quicksand_600SemiBold,
@@ -15,11 +15,12 @@ import { nicheConfig } from '../niche.config';
 
 const queryClient = new QueryClient();
 
-// ThemeProvider owns light/dark; StatusBar follows the resolved scheme.
+// ThemeProvider owns light/dark; SystemBars follow the resolved scheme
+// without the deprecated Window.setStatusBarColor APIs.
 
-function ThemedStatusBar() {
+function ThemedSystemBars() {
   const theme = useTheme();
-  return <StatusBar style={theme.scheme === 'light' ? 'dark' : 'light'} />;
+  return <SystemBars style={theme.scheme === 'light' ? 'dark' : 'light'} />;
 }
 
 export default function RootLayout() {
@@ -36,7 +37,7 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <NicheConfigProvider config={nicheConfig}>
         <ThemeProvider>
-          <ThemedStatusBar />
+          <ThemedSystemBars />
           <Stack screenOptions={{ headerShown: false, animation: 'fade' }} />
         </ThemeProvider>
       </NicheConfigProvider>

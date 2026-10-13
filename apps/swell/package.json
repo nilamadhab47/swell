@@ -1,6 +1,6 @@
 {
   "name": "swell",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
@@ -35,6 +35,7 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.2",
+    "react-native-edge-to-edge": "1.6.0",
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.10.0",
@@ -49,7 +50,9 @@
   },
   "expo": {
     "install": {
-      "exclude": ["@shopify/react-native-skia"]
+      "exclude": [
+        "@shopify/react-native-skia"
+      ]
     }
   }
 }

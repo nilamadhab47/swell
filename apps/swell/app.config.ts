@@ -12,8 +12,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'Swell',
   slug: 'swell',
-  version: '1.0.7',
-  orientation: 'portrait',
+  version: '1.0.8',
+  orientation: 'default',
   icon: './assets/icon.png',
   scheme: 'swell',
   userInterfaceStyle: 'dark',
@@ -27,8 +27,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     supportsTablet: false,
     bundleIdentifier: 'com.swell.quit',
     usesAppleSignIn: true,
+    infoPlist: {
+      UISupportedInterfaceOrientations: ['UIInterfaceOrientationPortrait'],
+    },
   },
   android: {
+    edgeToEdgeEnabled: true,
     adaptiveIcon: {
       foregroundImage: './assets/android-icon-foreground.png',
       backgroundImage: './assets/android-icon-background.png',
@@ -36,7 +40,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: '#0e141b',
     },
     package: 'com.swell.quit',
-    versionCode: 8,
+    versionCode: 9,
     permissions: ['POST_NOTIFICATIONS', 'VIBRATE'],
     ...(googleServicesFile ? { googleServicesFile } : {}),
   },
@@ -45,6 +49,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-apple-authentication',
     'expo-web-browser',
     'expo-notifications',
+    'react-native-edge-to-edge',
+    './plugins/withAndroidLargeScreens',
     [
       'expo-build-properties',
       {

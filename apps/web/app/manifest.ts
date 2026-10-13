@@ -2,9 +2,9 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Swell',
+    name: 'Swell: Quit Smoking & Vaping',
     short_name: 'Swell',
-    description: 'Beat the next smoking craving in three minutes.',
+    description: 'Beat the next smoking or vaping craving in three minutes.',
     start_url: '/',
     display: 'standalone',
     background_color: '#eaf4f8',

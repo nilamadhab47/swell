@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { AppHeader } from '../components/AppHeader';
 import { GlassCard } from '../components/GlassCard';
@@ -41,6 +42,7 @@ const GAME_COPY: Record<
 export function GameSelectScreen() {
   const theme = useTheme();
   const { headline, body, title, label } = useTypography();
+  const insets = useSafeAreaInsets();
   const selectGame = useFlowStore((s) => s.selectGame);
   const reset = useFlowStore((s) => s.reset);
   const [lastGame, setLastGame] = useState<PlayableGame | null>(null);
@@ -63,7 +65,7 @@ export function GameSelectScreen() {
       <OceanBackground />
       <AppHeader showBack onBack={reset} />
 
-      <View style={styles.content}>
+      <View style={[styles.content, { paddingBottom: Math.max(insets.bottom, 24) + 24 }]}>
         <FadeBlock delay={40}>
           <Text style={[headline, { color: theme.text.primary, textAlign: 'center' }]}>
             Your 3-minute reset
@@ -158,7 +160,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 24,
     paddingTop: 16,
-    paddingBottom: 48,
     justifyContent: 'center',
   },
   surprise: {

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNicheConfig } from '../config/NicheConfigProvider';
 import { useTypography } from '../theme/useTypography';
 import { useTheme } from '../theme/useTheme';
@@ -14,9 +15,10 @@ export function AppHeader({ onBack, showBack = false }: AppHeaderProps) {
   const theme = useTheme();
   const config = useNicheConfig();
   const { title } = useTypography();
+  const insets = useSafeAreaInsets();
 
   return (
-    <View style={styles.header}>
+    <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
       {showBack ? (
         <Pressable onPress={onBack} hitSlop={12} style={styles.iconBtn}>
           <Text style={{ color: theme.text.secondary, fontSize: 22 }}>
@@ -45,7 +47,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    paddingTop: 56,
     paddingBottom: 8,
     zIndex: 10,
   },

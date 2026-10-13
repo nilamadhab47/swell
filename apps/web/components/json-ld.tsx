@@ -22,7 +22,7 @@ export function JsonLd() {
     {
       '@context': 'https://schema.org',
       '@type': 'SoftwareApplication',
-      name: site.name,
+      name: site.listingName,
       applicationCategory: 'HealthApplication',
       operatingSystem: 'Android',
       description: site.description,

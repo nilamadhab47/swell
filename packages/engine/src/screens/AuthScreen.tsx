@@ -15,6 +15,7 @@ import { ApiError } from '../data/types';
 import { openLegalPage, PRIVACY_URL, TERMS_URL } from '../legal/links';
 import { formatLocalPhone, isSimpleMobile } from '../auth/phone';
 import { useAuthStore } from '../auth/useAuthStore';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/useTheme';
 import { useTypography } from '../theme/useTypography';
 
@@ -30,6 +31,7 @@ export function AuthScreen() {
   const theme = useTheme();
   const config = useNicheConfig();
   const { display, body, label, title } = useTypography();
+  const insets = useSafeAreaInsets();
   const requestPhoneCode = useAuthStore((s) => s.requestPhoneCode);
   const verifyPhoneCode = useAuthStore((s) => s.verifyPhoneCode);
   const loginWithApple = useAuthStore((s) => s.loginWithApple);
@@ -119,7 +121,15 @@ export function AuthScreen() {
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View style={styles.body}>
+        <View
+          style={[
+            styles.body,
+            {
+              paddingTop: insets.top + 24,
+              paddingBottom: Math.max(insets.bottom, 16) + 16,
+            },
+          ]}
+        >
           <Text style={[label, { color: theme.text.secondary }]}>
             {config.brand.name.toUpperCase()}
           </Text>
@@ -432,7 +442,6 @@ const styles = StyleSheet.create({
   body: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 72,
   },
   input: {
     marginTop: 16,

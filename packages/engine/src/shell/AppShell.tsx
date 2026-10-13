@@ -168,6 +168,9 @@ const styles = StyleSheet.create({
   },
   pages: {
     flex: 1,
+    width: '100%',
+    maxWidth: 560,
+    alignSelf: 'center',
   },
   center: {
     alignItems: 'center',

@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     template: '%s · Swell',
   },
   description: site.description,
-  applicationName: site.name,
+  applicationName: site.listingName,
   keywords: ['quit smoking', 'smoking cravings', 'stop smoking', 'smoke-free', 'craving support', 'quit vaping'],
   authors: [{ name: 'Swell' }],
   creator: 'Swell',

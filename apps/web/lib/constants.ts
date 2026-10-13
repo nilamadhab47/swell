@@ -15,10 +15,11 @@ function optionalUrl(value: string | undefined): string {
 
 export const site = {
   name: 'Swell',
+  listingName: 'Swell: Quit Smoking & Vaping',
   tagline: 'Three minutes. Then it’s gone.',
-  title: 'Swell — Beat Smoking Cravings, One at a Time',
+  title: 'Swell: Quit Smoking & Vaping — Beat the Next Craving',
   description:
-    'Swell helps you quit smoking or vaping by riding out the next craving. A calm 3-minute game. No lectures. Just a score of the ones that didn’t get you.',
+    'Swell: Quit Smoking & Vaping helps you ride out the next craving. A calm 3-minute game. No lectures. Just a score of the ones that didn’t get you.',
   url: envOrDefault(process.env.NEXT_PUBLIC_SITE_URL, DEFAULT_SITE_URL),
   email: 'nilamadhab47@gmail.com',
   appStoreUrl: optionalUrl(process.env.NEXT_PUBLIC_APP_STORE_URL),
@@ -35,7 +36,7 @@ export const nav = [
 export const faqs = [
   {
     q: 'What is Swell?',
-    a: 'Swell is a calm app for riding out smoking or vaping cravings. When the urge hits, you open Swell, play a three-minute game, and we keep score of the ones that didn’t get you.',
+    a: 'Swell: Quit Smoking & Vaping is a calm app for riding out cravings. When the urge hits, you open Swell, play a three-minute game, and we keep score of the ones that didn’t get you.',
   },
   {
     q: 'How does the 3-minute craving experience work?',
